@@ -1,0 +1,48 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+
+executable anagrams
+
+cat > words <<EOF
+bar
+boo
+far
+foo
+EOF
+
+testing "anagrams generates all the anagrams implied by a word list"
+anagrams -w words -- foobar > output
+cat > expected <<EOF
+foobar
+ bar foo
+ boo far
+EOF
+ 
+if diff expected output > /dev/null; then
+  ok
+else
+  fail "output did not match what we expected"
+  set +e; diff -u expected output >> errors; set -e
+fi
+
+testing "anagrams -e works"
+anagrams -e bar -e boo -e far -e foo -w /dev/null -- foobar > output
+cat > expected <<EOF
+foobar
+ bar foo
+ boo far
+EOF
+ 
+if diff expected output > /dev/null; then
+  ok
+else
+  fail "output did not match what we expected"
+  set +e; diff -u expected output >> errors; set -e
+fi
+
+finished

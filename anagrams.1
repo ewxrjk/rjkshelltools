@@ -1,0 +1,37 @@
+.TH anagrams 1
+.SH NAME
+anagrams \- list multi-word anagrams of any word
+.SH SYNOPSIS
+.B anagrams
+.RI [ options ]
+.RB [ -- ]
+.RI [ words ...]
+.SH DESCRIPTION
+.B anagrams
+lists all the anagrams it can find of the words listed on the command
+line, or read from standard input if none are listed.  Anagrams that
+use the same words in different orders are only given once, with the
+words in the same order as they appear in the word list itself.
+.SH OPTIONS
+.TP
+\fB-w\fR \fIpath\fR, \fB--wordlist\fR \fIpath\fR
+Specify a word list to use.  This should consist of a list of words
+one to a line, and nothing else.
+.IP
+You may specify multiple word lists by using this option multiple
+times.  If you do not specify any then a default word list is used.
+.TP
+\fB-e\fR \fIword\fR, \fB--word\fR \fIword\fR
+Add a word to the word list.
+.IP
+This option does not prevent the default word list from being used.
+If you just want to specify words with \fB--word\fR and not use any
+word list file, use \fB--wordlist /dev/null\fR.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>.

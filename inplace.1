@@ -1,0 +1,186 @@
+.\" alarm is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; see the file COPYING.  If not, write to
+.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.TH inplace 1 "August 12, 2001"
+.SH NAME
+inplace \- modify files in-place via any filter
+.SH SYNOPSIS
+.B inplace
+.RB [ -0clg ]
+.RB [ -f
+.IR FILENAME ]
+.RB [ -p
+.IR PATTERN ]
+.RB [ -i
+.IR FILENAME ]
+.RB [ -b
+.IR SUFFIX ]
+.RB [ -j
+.IR PROCESSES ]
+.RB [ -- ]
+.IR COMMAND ...
+.SH DESCRIPTION
+.B inplace
+runs
+.I COMMAND 
+as a filter on a set of files, using each file as the output and
+replacing them with a file containing the output.
+.PP
+By default the filenames affected should be passed on standard input,
+one to a line.  If any of the
+.BR -f ,
+.B -p
+or
+.B -i
+options are specified then this behaviour is supressed.
+.PP
+.I COMMAND
+is executed as via
+.BR exec ;
+if you wish to execute it via the shell then you must do so
+explicitly, for example:
+.PP
+.nf
+inplace -p '*.c' -- ${SHELL} -c 'sed "${SED_COMMAND}"'
+.fi
+.PP
+Be careful to get the quoting right if you do this!
+.SH OPTIONS
+.TP
+.BR -0 | --null
+When reading path names from a file, each filename will be terminated
+by a null byte, rather than by a newline.
+.TP
+.BR -b | --backup
+Save the original files, using names formed from the original name
+with the
+.I SUFFIX
+appended.
+.TP
+.BR -c | --continue
+If a command invocation fails then continue with further invocations.
+By default,
+.B inplace
+terminates when an error from an invoked command is detected.
+.TP
+.BR -f | --file
+Add
+.I FILENAME
+to the list of files to operate on, and don't read from standard
+input.
+.TP
+.BR -g | --extended-glob
+Support brace expansions, e.g. "{a,b}" and tilde expansion in
+.B -p
+patterns.  This only works on systems that support the relevant
+options to
+.BR glob (3)
+e.g. GNU systems.
+.TP
+.BR -i | --input
+Read filenames 
+.IR FILENAME ,
+and don't read from standard input.
+.IP
+The special filename "-" may be used put back the read from standard
+input.
+.TP
+.BR -j | --jobs
+Execute up to
+.I PROCESSES
+parallel invocations of the command.  The default is 1.
+.TP
+.BR -l | --list
+Output all filenames NOT operated successfully on to standard output.
+The
+.B -0
+option affects whether a newline or null character is used to
+terminate each filename.
+.IP
+Note that this option affects the exit status in a possibly
+non-obvious way.  See below.
+.TP
+.BR -p | --pattern
+Operate on files matching 
+.IR PATTERN .
+Remember to quote the pattern if it contains any special characters
+(as it probably will).
+.TP
+.B --
+Everything after this option will be interpreted as a command, even if
+it looks like an option.
+.PP
+The
+.BR -f ,
+.B -i
+and
+.B -p
+options may be used multiple times, and will be interpreted in strict
+order.  The
+.B -0
+option affects all files read regardless of where it appears in the
+command line.
+.SH "EXIT STATUS"
+If everything works (i.e. all file reads succeed, every command
+invokes with zero exit status, etc) then
+.B inplace
+exits with status 0.
+.PP
+If one or more command invocations failed, but everything else works,
+.B inplace
+exits with status 1, EXCEPT if
+.B -l
+is specified, in which case (assuming the output of the file list to
+standard output succeeds) it exits with status 0.
+.PP
+If anything else goes wrong,
+.B inplace
+exits with some other nonzero status.
+.SH NOTES
+If you use
+.BR find (1)
+to generate the list of filenames it is recommended that you use the
+.B -print0
+option to
+.B find
+and the
+.B -0
+option to
+.B inplace
+to avoid problems with strange filenames, if this is supported on your
+version of
+.BR find .
+If it is not, it is recommended that you get a version that does
+support it.
+.SH EXAMPLES
+To modify in place a collection of files chosen by a glob pattern:
+.PP
+.nf
+inplace -p '*.c' -- sed 's/foo_bar/foobar/g;'
+.fi
+.PP
+To do the same but using \fBfind\fR(1) to collect filenames:
+.PP
+.nf
+find . -name '*.c' -print0 | \e
+  inplace -0 -- sed 's/foo_bar/foobar/g;'
+.fi
+.PP
+To sort a single file in place:
+.PP
+.nf
+inplace -f ~/addresses -- sort
+.fi
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

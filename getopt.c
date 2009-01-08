@@ -1,0 +1,1 @@
+/usr/share/autoproject/cli/c/none/getopt.c

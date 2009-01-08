@@ -1,0 +1,112 @@
+.\" adverbio is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; see the file COPYING.  If not, write to
+.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.TH ADVERBIO 1 "June 26, 2001"
+.SH NAME
+adverbio \- I/O redirection with adverbial commands
+.SH SYNOPSIS
+.B adverbio
+.RI [ options ]
+.RB [ -- ]
+.IR command ...
+.SH DESCRIPTION
+.B adverbio
+performs one or more I/O redirection operations and then executes the
+command via
+.BR execvp (3).
+It is intended to be used where shell I/O redirection is
+inappropriate, either because the shell is not in use, or because it
+would perform redirection operations at the wrong moment.
+.PP
+For example, consider the command "really", which executes its
+arguments as root.  If you want to redirect the output of such a
+command then the naive approach:
+.PP
+.nf
+really ls > /root/file
+.fi
+.PP
+does not work - the mortal user's shell tries to perform the
+redirection, and this fails.  It is necessary to reinvoke the shell to
+get it to perform the redirection at the right point:
+.PP
+.nf
+really sh -c 'ls > /root/file'
+.fi
+.PP
+However this is unacceptable for general use, as it requires shell
+commands to be shell-quoted - and so any argument strings must be
+quoted twice!  This is messy and error prone.
+.PP
+With
+.B adverbio
+the above becomes:
+.PP
+.fn
+really adverbio -o /root/file -- ls
+.fi
+.PP
+which is slightly verbose, but requires no quoting.
+.SH OPTIONS
+\fBadverbio\fP accepts the following options:
+.TP
+\fB-o\fR \fIpath\fI, \fB--stdout\fR \fIpath\fI
+Redirects standard output to output file PATH.
+.TP
+\fB-e\fR \fIpath\fI, \fB--stderr\fR \fIpath\fI
+Redirects standard error to output file PATH.
+.TP
+\fB-i\fR \fIpath\fI, \fB--stdin\fR \fIpath\fI
+Redirects standard input from input file PATH.
+.TP
+\fB-O\fR \fIfd\fB:\fIpath\fI, \fB--output\fR \fIfd\fB:\fIpath\fI
+Redirects file descriptor FD to output file PATH, destroying any
+previous meaning for FD.
+.TP
+\fB-I\fR \fIfd\fB:\fIpath\fI, \fB--input\fR \fIfd\fB:\fIpath\fI
+Redirects file descriptor FD from input file PATH, destroying any
+previous meaning for FD.
+.TP
+\fB-r\fR \fIfd\fB:\fIofd\fI, \fB--redirect\fR \fIfd\fB:\fIofd\fI
+Makes file descriptor FD a copy of existing file descriptor OFD,
+destroying any previous meaning for FD.
+.TP
+\fB-C\fR \fIfd\fB, \fB--close\fR \fIfd\fB
+Closes file descriptor FD, which must be open.
+.TP
+\fB-a\fR, \fB--append\fR
+Specifies that all output files opened after this option will be
+opened in "append" mode.  If the file does not exist it will be
+created.  All writes will be appended to the file.
+.TP
+\fB-c\fR, \fB--clobber\fR
+Specifies that all output files opened after this option will be
+opened in "clobber" mode.  If the file exists it will be truncated.
+.TP
+\fB-s\fR, \fB--safe\fR
+Specifies that all output files opened after this option will be
+opened in "safe" mode.  If the file exists then an error will be
+reported.  This is the default.
+.TP
+\fB-S\fR, \fB--sync\fR
+Specifies that all output files opened after this option will be
+opened for synchronous I/O.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>.

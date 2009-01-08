@@ -1,0 +1,53 @@
+.TH connect 1
+.SH NAME
+connect-socket \- connect a socket and run a program
+.SH SYNOPSIS
+.B connect-socket
+.RI [ options ]
+.RB [ -- ]
+.I fd
+.RI [ family ]
+.RI [ type ]
+.I address
+.RB [ -- ]
+.IR command ...
+.SH DESCRIPTION
+\fBconnect-socket\fR connects a socket and executes a command.
+.PP
+The arguments are as follows:
+.TP 8
+.I fd
+The file descriptor to use.
+.TP
+.I family
+The socket family.  This may be \fBinet\fR for internet sockets or
+\fBunix\fR for UNIX socket.  If the family is ommitted, \fBinet\fR is
+assumed.
+.TP
+.I type
+This may be \fBstream\fR for stream sockets or \fBdgram\fR for
+datagram sockets.  For internet sockets, this maps onto TCP and UDP.
+The socket type is optional and defaults to \fBstream\fR.
+.TP
+.I address
+The next argument is the socket address.  The syntax of this depends
+on the socket family.
+.IP
+For internet sockets, the address should either be
+\fIaddress\fB:\fIport\fR or just \fIport\fR.  \fIaddress\fR may be
+either a hostname or an IP address.  \fIport\fR may be a service name
+or a port number.
+.IP
+For UNIX sockets, the address is the path of the socket.
+.TP
+.I command
+The command to execute.
+.SH OPTIONS
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

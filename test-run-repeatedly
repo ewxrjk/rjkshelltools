@@ -1,0 +1,113 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable run-repeatedly
+
+# create a control directory
+mkdir progs
+
+mknod pipe1 p
+
+# create a program to run
+cat <<EOF > progs/prog1
+#! /bin/sh
+set -e
+echo \$\$ > pipe1
+while :; do
+  sleep 1
+done
+EOF
+chmod 555 progs/prog1
+
+# start up the runner
+run-repeatedly -d -r 1 -e 1 -s progs 2>stderr >stdout &
+pid=$!
+
+testing "programs present at startup are started"
+set +e
+read pid1 < pipe1
+status=$?
+set -e
+if test $status != 0; then
+  fail "error reading from pipe1 [$status]"
+elif kill -0 $pid1 > /dev/null 2>&1; then
+  ok
+else
+  fail "prog1 is not running"
+fi
+
+testing "newly added programs are started"
+mknod pipe2 p
+mknod pipe2term p
+cat <<EOF > progs/prog2
+#! /bin/sh
+set -e
+trap "echo > pipe2term ; exit" TERM
+echo \$\$ > pipe2
+while :; do
+  sleep 1
+done
+EOF
+chmod 555 progs/prog2
+set +e
+read pid2 < pipe2
+status=$?
+set -e
+if test $status != 0; then
+  fail "error reading from pipe2 [$status]"
+elif kill -0 $pid2 > /dev/null 2>&1; then
+  ok
+else
+  fail "prog2 is not running"
+fi
+
+testing "programs are terminated when they are removed"
+rm -f progs/prog2
+set +e
+read foo < pipe2term
+status=$?
+set -e
+sleep 1				# might still be in exit()
+if test $status != 0; then
+  fail "error reading from pipe2term [$status]"
+elif kill -0 $pid2 >/dev/null 2>&1; then
+  fail "prog2 is still running"
+else
+  ok
+fi
+
+#echo $pid
+#kill $pid
+
+testing "programs are restarted when they terminate"
+rm -f pipe1
+mknod pipe1 p
+kill $pid1
+set +e
+read pid1 < pipe1
+status=$?
+set -e
+if test $status != 0; then
+  fail "error reading from pipe1 [$status]"
+elif kill -0 $pid1 > /dev/null 2>&1; then
+  ok
+else
+  fail "prog1 is not running"
+fi
+
+testing "programs are terminated when the parent is terminated"
+kill $pid
+set +e
+wait $pid 2>/dev/null
+set -e
+if kill -0 $pid1 2>/dev/null; then
+  fail "prog1 is still running"
+else
+  ok
+fi
+
+finished

@@ -1,0 +1,30 @@
+#! /bin/sh
+set -e
+fail=0
+for executable in *; do
+  if test -x "$executable" && ! test -d "$executable"; then
+    case "$executable" in
+    check-tested-everything | test-* | configure | config.* | depcomp | \
+    install-sh | missing | mkinstalldirs | *.in | prepare )
+      ;;
+    * )
+      set +e
+      grep "^$executable$" tested > /dev/null
+      status=$?
+      set -e
+      case $status in
+      0 )
+	;;
+      1 )
+	echo "never tested $executable" 1>&2
+	fail=1
+	;;
+      * )
+	exit 1
+	;;
+      esac
+      ;;
+    esac
+  fi
+done
+exit $fail

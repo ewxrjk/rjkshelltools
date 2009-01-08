@@ -1,0 +1,25 @@
+.TH iobuffer 1
+.SH NAME
+iobuffer \- buffer I/O in a pipeline
+.SH SYNOPSIS
+.B iobuffer
+.RI [ options ]
+.SH DESCRIPTION
+.B iobuffer
+reads data from standard input and writes it to standard output,
+delaying the writes so that many bytes are written at once.
+.SH OPTIONS
+.TP
+\fB-r\fR \fIN\fR, \fB--read-min\fR \fIN\fR
+Read up to at least \fIN\fR bytes per call; that is, each time any
+data is read, a buffer will be provided for at least \fIN\fR bytes.
+The default is 32768.
+.TP
+\fB-w\fR \fIN\fR, \fB--write-min\fR \fIN\fR
+Write at least \fIN\fR bytes per call.  The default is 32768.
+.TP
+\fB-b\fR \fIN\fR, \fB--buffer\fR \fIN\fR
+The size of the buffer.  The default is
+1048576.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

@@ -1,0 +1,78 @@
+.TH bind-socket 1
+.SH NAME
+bind-socket \- bind a file descriptor to a socket address
+.SH SYNOPSIS
+.B bind-socket
+.RI [ options ]
+.RB [ -- ]
+.RI [ redirection ]...
+.RB [ -- ] 
+.IR command ...
+.SH DESCRIPTION
+\fBbind-socket\fR opens file descriptors as sockets, binds them to
+addresses, and configures them to listen for incoming connections.
+When all file descriptors have been set up this way, it executes the
+specified command.
+.PP
+Each redirection consists of the following arguments:
+.TP 8
+.I fd
+The file descriptor to use.
+.TP
+.I family
+The socket family.  This may be \fBinet\fR for internet sockets or
+\fBunix\fR for UNIX socket.  If the family is ommitted, \fBinet\fR is
+assumed.
+.TP
+.I type
+This may be \fBstream\fR for stream sockets or \fBdgram\fR for
+datagram sockets.  For internet sockets, this maps onto TCP and UDP.
+The socket type is optional and defaults to \fBstream\fR.
+.TP
+.I address
+The next argument is the socket address.  The syntax of this depends
+on the socket family.
+.IP
+For internet sockets, the address should either be
+\fIaddress\fB:\fIport\fR or just \fIport\fR.  \fIaddress\fR may be
+either a hostname or an IP address.  \fIport\fR may be a service name
+or a port number.
+.IP
+For UNIX sockets, the address is the path of the socket.
+.PP
+The list of redirections is separated from the command by a "--"
+option.
+.SH OPTIONS
+.TP
+\fB-n\fR, \fB--no-reuse\fR
+By default, the socket will have the \fBSO_REUSEADDR\fR option set,
+allowing re-use of local addresses.  This option suppresses this.
+.TP
+\fB-l\fR \fIsize\fR, \fB--listen\fR \fIsize\fR
+This option specifies the size of the listen queue.  The exact meaning
+of this value varies between different platforms and between different
+operating system versions; consult local documentation for details.
+.TP
+\fB-p\fR, \fB--parents\fR
+This option only applies to \fBunix\fR sockets, and causes any
+directories in the path to the socket name to be created if they are
+missing.
+.TP
+\fB-m\fR \fImode\fR, \fB--mode\fR \fImode\fR
+This option only applies if the \fB-p\fR option was used, and defines
+the mode that directories are created with.  If it not used then the
+current umask applies.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH NOTES
+On some platforms, the permissions on UNIX domain sockets are ignored;
+instead the permissions on the containing directory must be used to
+protect them.
+.SH "SEE ALSO"
+.BR accept-socket (1)
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

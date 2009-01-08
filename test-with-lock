@@ -1,0 +1,48 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable with-lock
+executable daemon
+
+testing "with-lock excludes concurrent operation"
+daemon -C -- with-lock -- lockfile sh -c "
+  sleep 3
+  touch stamp
+"
+sleep 1
+with-lock -- lockfile sh -c "
+  if test -f stamp; then
+    touch ok
+  fi
+"
+if test -f ok; then
+  ok
+else
+  fail "'stamp' not created in time"
+fi
+
+testing "with-lock -s allows concurrent operation"
+rm -f ok stamp
+daemon -C -- with-lock -s -- lockfile sh -c "
+  touch stamp
+  sleep 3
+  rm -f stamp
+"
+sleep 1
+with-lock -s -- lockfile sh -c "
+  sleep 1
+  if test -f stamp; then
+    touch ok
+  fi
+"
+if test -f ok; then
+  ok
+else
+  fail "'stamp' not present in second run"
+fi
+
+finished

@@ -1,0 +1,40 @@
+.TH with-lock 1
+.SH NAME
+with-lock \- run a command with a lock held
+.SH SYNOPSIS
+.B with-lock
+.RI [ options ]
+.B --
+.I path
+.IR command ...
+.SH DESCRIPTION
+.B with-lock
+runs
+.I command
+with a 
+.BR fcntl (2)-style
+lock held on a file.  It takes the following options:
+.TP
+\fB-f N\fR, \fB--fd N\fR
+Pass the lock file descriptor to the child using file descriptor
+.I N
+rather than whatever
+.BR open (2)
+returns.
+.TP
+\fB-e\fR, \fB--exclusive\fR
+Take an exclusive lock.  The process will block until no other process
+holds any kind of lock.  This is the default.
+.TP
+\fB-s\fR, \fB--shared\fR
+Take a shared lock.  The process will block until no other process
+holds an exclusive lock (but it will not be blocked by other shared
+locks).
+.TP
+\fB-F\fR, \fB--fork\fR
+Run the command in a subprocess instead of executing it directly.  If
+you use this option then it does not matter if the subprocess closes
+the lockfile or daemonizes: the parent will still hold the lock for
+it.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

@@ -1,0 +1,50 @@
+.TH run-repeatedly 1
+.SH NAME
+run-repeatedly \- run and restart programs
+.SH SYNOPSIS
+.B run-repeatedly
+.RI [ options ]
+.RB [ -- ]
+.I directory
+.SH DESCRIPTION
+\fBrun-repeatedly\fR runs one or more programs and restarts them when
+they terminate.
+.PP
+The programs to be run are placed in \fIdirectory\fR.  Only executable
+files with names that consist only of letters, digits, underscores and hyphens are
+executed; everything else (including dot-files and backup files) is
+ignored.
+.PP
+The directory is rescanned periodically.  If a new file appears in it
+then it will be executed.  If a file disappears from it then the
+corresponding program won't be stopped immediately; however it won't
+be restarted next time it terminates, unless the \fB--shutdown\fR
+option is used.
+.PP
+If any of SIGINT, SIGTERM or SIGHUP are received then all children are
+signalled (with SIGTERM if SIGINT or SIGTERM was received, or with
+SIGHUP if that was received).  Only when all children exit does
+\fBrun-repeatedly\fR itself terminate.
+.SH OPTIONS
+.TP
+\fB-r\fR \fIseconds\fR, \fB--rescan-interval\fR \fIseconds\fR
+The minimum number of seconds to leave between each rescan of the
+directory.  The default is 5 minutes.
+.TP
+\fB-e\fR \fIseconds\fR, \fB--execute-interval\fR \fIseconds\fR
+The minimum number of seconds to leave between each restart of each
+program. The default is 1 minute.
+.TP
+\fB-s\fR, \fB--shutdown\fR
+When a program disappears from the control directory, attempt to shut
+it down by sending it a SIGTERM.
+.TP
+\fB-d\fR, \fB--debug\fR
+Debug mode.
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

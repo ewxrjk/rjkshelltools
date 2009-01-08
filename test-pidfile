@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable pidfile
+
+testing "pidfile works"
+pidfile -- pidfile.pid sh -c '
+  echo $$ > command.pid
+'
+if test ! -f pidfile.pid; then
+  fail "pidfile.pid does not exist"
+elif test ! -f command.pid; then
+  fail "command.pid does not exist"
+  fail
+else
+  read p < pidfile.pid
+  read c < command.pid
+  if test "x$p" != "x$c"; then
+    fail "p=\"$p\", c=\"$c\""
+  else
+    ok
+  fi
+fi
+
+finished

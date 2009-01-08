@@ -1,0 +1,75 @@
+.TH daemon 1
+.SH NAME
+daemon \- run a process as a daemon
+.SH SYNOPSIS
+.B daemon
+.RI [ options ]
+.RB [ -- ]
+.IR command ...
+.SH DESCRIPTION
+\fBdaemon\fR runs \fIcommand\fR as a daemon.  It performs the
+following steps:
+.TP
+.B .
+All file descriptors above 2 are closed (unless \fB--no-close\fR was
+specified)
+.TP
+.B .
+The process switches to the root directory (unless \fB--no-chdir\fR
+was specified).
+.TP
+.B .
+If the \fB-l\fR or \fB-L\fR options were used, then a daemon is
+created to handle the logging.  If \fB-l\fR was used then any further
+errors will go to the logfile.
+.TP
+.B .
+The process forks.  The parent waits for the child to terminate and
+then exits (normally this happens almost immediately).
+.TP
+.B .
+In the child, the remaining file descriptors (0, 1 and 2) are
+redirected to \fB/dev/null\fR unless the appropriate \fB-l\fR/\fB-L\fR
+option or \fB--no-close\fR was used.
+.IP
+If you didn't specify \fB-l\fR or \fB--no-close\fR then any errors
+from here on will not be reported anywhere.
+.TP
+.B .
+The process calls \fBsetsid\fR(2) to create a new session.
+.TP
+.B .
+The process forks again, so that it isn't the session leader.  The
+parent exits immediately.
+.TP
+.B .
+In the child, the command is executed.
+.SH OPTIONS
+.TP
+\fB-n\fR, \fB--no-close\fR
+Don't close file descriptors.
+.TP
+\fB-l\fR \fIpath\fR, \fB--log-stderr\fR \fIpattern\fR
+Log stderr to a file.  \fIpatter\fR has the same syntax as used by
+\fBstrftime\fR(3).
+.TP
+\fB-L\fR \fIpath\fR, \fB--log-stdout\fR \fIpattern\fR
+Log stdout to a file.
+.TP
+\fB-C\fR, \fB--no-chdir\fR
+Don't change directory.
+.TP
+\fB-m\fR \fIN\fR, \fB--max-log-age\fR \fIN\fR
+Delete logfiles that are older than \fIN\fR days old.  By default,
+logfiles are kept forever.
+.TP
+\fB-c\fR, \fB--compress\fR
+Compress saved logfiles.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>.

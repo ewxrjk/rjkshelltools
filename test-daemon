@@ -1,0 +1,175 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable daemon
+
+pwd=`pwd`
+
+testing "daemon runs its command in the background"
+# the idea is that we send the pid and wait a bit; the parent should kill
+# us during this time.  if it doesn't then it must be blocking (or unable
+# to respond within 120 seconds due to high system load or something,
+# but hopefuly that is rare...)
+rm -f pipe
+mknod pipe p
+daemon -- sh -c "
+  exec > $pwd/pipe
+  echo \$\$
+  sleep 120
+  echo foo
+"
+exec 3<pipe
+read 0<&3 pid
+kill -9 "$pid"
+set +e
+read 0<&3 foo
+status=$?
+set -e
+if test "x$status" = x0; then
+  fail "daemon survived long enough to write foo"
+else
+  ok
+fi
+
+testing "daemonized processes are in the root directory"
+rm -f pipe
+mknod pipe p
+daemon -- sh -c "
+  pwd > $pwd/pipe
+"
+read dir < pipe
+if test "x$dir" != x/; then
+  fail "dir=$dir"
+else
+  ok
+fi
+
+testing "daemon -C prevents change of directory"
+rm -f pipe
+mknod pipe p
+daemon -C -- sh -c "
+  pwd > $pwd/pipe
+"
+read dir < pipe
+actual=`pwd`
+if test "x$dir" != "x$actual"; then
+  fail "dir=$dir, expected $actual"
+else
+  ok
+fi
+
+testing "daemonized processes have file descriptors closed"
+rm -f pipe
+mknod pipe p
+(
+  exec 3> output
+  daemon -C -- sh -c "
+    set +e
+    echo foo 1>&3
+    echo \$? > pipe
+  "
+)
+read status < pipe
+if test "x$status" = x0; then
+  fail "write to fd 3 succeeded when it should have failed"
+else
+  ok
+fi
+
+testing "daemon -n prevents file descriptors from being closed"
+rm -f pipe
+mknod pipe p
+(
+  exec 3> output
+  daemon -C -n -- sh -c "
+    set +e
+    echo foo 1>&3
+    echo \$? > pipe
+  "
+)
+read status < pipe
+if test "x$status" = x0; then
+  ok
+else
+  fail "write to fd 3 failed [$status] when it should have worked"
+fi
+
+testing "daemonized processes don't have a controlling terminal"
+rm -f pipe
+mknod pipe p
+daemon -C -- sh -c "
+  set +e
+  read x < /dev/tty
+  echo \$? > pipe
+"
+read status < pipe
+if test "x$status" = x0; then
+  fail "read from /dev/tty succeeded when it should have failed"
+else
+  ok
+fi
+
+testing "daemonized processes can't pick up a controlling terminal"
+rm -f pipe
+mknod pipe p
+mytty=`tty`
+daemon -C -- sh -c "
+  set +e
+  exec < $mytty
+  read x < /dev/tty
+  echo \$? > pipe
+"
+read status < pipe
+if test "x$status" = x0; then
+  fail "read from /dev/tty succeeded when it should have failed"
+else
+  ok
+fi
+
+rm -f stderr.output
+testing "daemon -l saves stderr"
+# since the log is written asynchronously, I can't think of a good way
+# to do this without the sleep
+daemon -C -l stderr.output -- sh -c "
+  echo foo 1>&2
+"
+sleep 2
+if test ! -f stderr.output; then
+  fail "stderr.output does not exist"
+else
+  if read result < stderr.output; then
+    if test "x$result" != xfoo; then
+      fail "found '$result' in stderr.output, expected 'foo'"
+    else
+      ok
+    fi
+  else
+    fail "no output in stderr.output"
+  fi
+fi
+
+rm -f stdout.output
+testing "daemon -L saves stdout"
+daemon -C -L stdout.output -- sh -c "
+  echo bar
+"
+sleep 2
+if test ! -f stdout.output; then
+  fail "stdout.output does not exist"
+else
+  if read result < stdout.output; then
+    if test "x$result" != xbar; then
+      fail "found '$result' in stdout.output, expected 'bar'"
+    else
+      ok
+    fi
+  else
+    fail "no output in stdout.output"
+  fi
+fi
+
+finished

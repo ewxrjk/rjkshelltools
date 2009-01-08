@@ -1,0 +1,23 @@
+.TH pidfile 1
+.SH NAME
+pidfile \- write a pidfile and execute a command
+.SH SYNOPSIS
+.B pidfile
+.RI [ options ]
+.RB [ -- ]
+.I pidfile
+.IR command ...
+.SH DESCRIPTION
+\fBpidfile\fR
+writes the current process ID to \fIpidfile\fR and executes the
+specified command.
+.SH OPTIONS
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>
+

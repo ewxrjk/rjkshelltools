@@ -1,0 +1,77 @@
+.\" alarm is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; see the file COPYING.  If not, write to
+.\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.TH alarm 1 "August 12, 2001"
+.SH NAME
+alarm \- run a program with a timeout
+.SH SYNOPSIS
+.B alarm
+.BI [ options ]
+.RB [ -- ]
+.I timeout
+.IR command ...
+.SH DESCRIPTION
+.B alarm
+runs a program as a subprocess, and sends it a signal when a timeout
+expires (if the program does not exit first).
+.PP
+The \fItimeout\fR argument may be just a number of seconds, or it may
+consist of any or all of seconds, minutes, hours and days.
+.PP
+In the latter form, the number of seconds should be suffixed by "s",
+the number of minutes by "m", the numbers of hours by "h" and the
+number of days by "d".  The different components may appear in any
+order, but if the same size units are used more than once, the meaning
+is not defined.
+.PP
+Letter case is not significant.  No whitespace is allowed in the
+time specification.  All numbers are in decimal.
+.PP
+The command is passed directly to \fBexecvp\fR(3), rather than
+re-invoking the shell.  If you want to execute an arbitrary shell
+command it is up to you to invoke the shell properly.
+.SH OPTIONS
+.TP
+\fB-s\fR \fIsignal\fR, \fB--signal\fR \fIsignal\fR
+Sets the signal to send to the subprocess when the timeout expires.
+You may specify a signal number (e.g. \fB-s3\fR) or a name with or
+without the initial "SIG" (e.g. \fB-sSIGINT\fR or \fB-sINT\fR).
+Letter case is not significant.
+.IP
+The default is SIGTERM.
+.TP
+\fB-v\fR, \fB--verbose\fR
+Verbose mode.  If this option is used then \fBalarm\fR will display a
+message when it times out the child process, and report the exit
+status of the child process (unless it is 0).  If it used twice then
+it will report the exit status even when it is 0.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH "EXIT STATUS"
+If the child process exits normally, its status is propagated back to
+the caller.  If it terminates due to a signal (whether sent by
+\fBalarm\fR or not) then \fBalarm\fR will exit with a status equal to
+the signal number plus 128.
+.PP
+If an error occurs inside \fBalarm\fR, it will exit with status 1.
+.SH OUTPUT
+\fBalarm\fR reports various conditions, not all of them fatal errors,
+to stderr.  It only writes to stdout if the \fB--help\fR or
+\fB--version\fR options are used.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>.

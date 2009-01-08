@@ -1,0 +1,101 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable logfds
+
+testing "log output goes to the right place"
+
+logfds -- 1 1.out 2 2.out -- sh -c 'echo one; echo two 1>&2'
+
+if test ! -f 1.out; then
+  fail "1.out does not exist"
+elif test ! -f 2.out; then
+  fail "2.out does not exist"
+else
+  read oneval < 1.out
+  read twoval < 2.out
+  if test "x$oneval" != xone; then
+    fail "1.out says \"$oneval\", should be \"one\""
+  elif test "x$twoval" != xtwo; then
+    fail "2.out says \"$twoval\", should be \"two\""
+  else
+    ok
+  fi
+fi
+
+testing "the logger is the parent"
+
+(
+  echo $$ > parent.pid
+  exec logfds -- 1 out -- sh -c 'echo $$ > command.pid'
+)
+if test ! -f parent.pid; then
+  fail "parent.pid missing"
+elif test ! -f command.pid; then
+  fail "command.pid missing"
+else
+  read p < parent.pid
+  read c < command.pid 
+  if test "x$p" = "x$c"; then
+    fail "parent=$p command=$c"
+  else
+    ok
+  fi
+fi
+
+rm -f parent.pid command.pid
+
+testing "the logger is the child if -C is used"
+
+sh -c "
+  echo \$\$ > parent.pid
+  exec logfds -C -- 1 out -- sh -c 'echo \$\$ > command.pid'
+"
+if test ! -f parent.pid; then
+  fail "parent.pid missing"
+elif test ! -f command.pid; then
+  fail "command.pid missing"
+else
+  read p < parent.pid
+  read c < command.pid 
+  if test "x$p" != "x$c"; then
+    fail "parent=$p command=$c"
+  else
+    ok
+  fi
+fi
+
+testing "old logs are compressed with -c"
+logfds -D1 -c -- 1 cc-%H%M%S -- \
+    sh -c 'for x in 1 2 3 4 5 6 7 8 9; do echo spong; sleep 1; done'
+set cc-*.gz
+ngz=$#
+set cc-*
+ntotal=$#
+if test $ngz -le 1; then
+  fail
+  ls -l cc-* >> errors
+else
+  ok
+fi
+
+testing "old logs are rotated with -m"
+logfds -D1 -m4 -- 1 rr-%H%M%S -- \
+    sh -c 'for x in 1 2 3 4 5 6 7 8 9; do echo spong; sleep 1; done'
+set rr-*
+# we allow a couple of "days" worth of clearance
+if test $# -ge 6; then
+  fail
+  ls -l rr-* >> errors
+elif test $# -lt 4; then
+  fail
+  ls -l rr-* >> errors 2>&1
+else
+  ok
+fi
+
+finished

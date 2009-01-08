@@ -1,0 +1,62 @@
+adverbio - I/O redirection with adverbial commands
+
+Rationale
+
+  "Adverbial" commands are shell commands which re-exec their command
+  line directly, usually after making some change to their
+  environment.
+
+  Well-known examples are "nice" and "nohup".  Sometimes however the
+  change the command makes interacts inconveniently with the shell's
+  I/O redirection: if the change could affect the effect of such
+  redirections, then you might want them to take place after the
+  change rather than before.  adverbio provides a convenient way to
+  achieve this.
+  
+  Consider, for example, the command "really", which executes its
+  arguments as root.  If you want to redirect the output of such a
+  command then the naive approach:
+  
+    really ls > /root/file
+  
+  does not work - the mortal user's shell tries to perform the
+  redirection, and this fails.  It is necessary to reinvoke the shell
+  to get it to perform the redirection at the right point:
+  
+    really sh -c 'ls > /root/file'
+  
+  However this is unacceptable for general use, as it requires shell
+  commands to be shell-quoted - and so any argument strings must be
+  quoted twice!  This is messy and error prone.
+  
+  With adverbio the above becomes:
+  
+    really adverbio -o /root/file -- ls
+  
+  which is slightly verbose, but requires no quoting.
+  
+Feedback
+
+  Please send all feedback to:
+
+    Richard Kettlewell <richard+adverbio@sfere.greenend.org.uk>
+
+  Patches should use "diff -u" format.
+
+Copyright
+  
+  Copyright (C) 2001 Richard Kettlewell
+  
+  adverbio is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA

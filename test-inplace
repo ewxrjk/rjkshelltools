@@ -1,0 +1,132 @@
+#! /bin/sh
+#
+# $Header: /cvs/rjkshelltools/test-inplace,v 1.7 2003-07-19 16:35:13 richard Exp $
+#
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+executable inplace
+
+fatal() {
+  echo "$@" 1>&2
+  exit 1
+}
+
+# create a fresh set of files
+fresh() {
+  rm -rf t
+  mkdir t
+  x=1
+  while test $x -lt 100; do
+    echo "file $x" > t/$x
+    x=`expr $x + 1`
+  done
+}
+
+testing "-f works"
+echo "file 1" > file1
+inplace -f file1 -- sed s/file/new/
+read a b < file1
+if test "x$a" != xnew || test "x$b" != x1; then
+  fail
+else
+  ok
+fi
+
+testing "-p works"
+fresh
+inplace -p "t/1*" -- sed s/file/new/
+
+x=1
+mangled=0
+notupdated=0
+while test $x -lt 100; do
+  read a b < t/$x
+  if test "$b" != $x; then
+    echo "[-p] t/$x mangled" >>errors
+    mangled=1
+  fi
+  case $x in
+  1* )
+    if test "$a" != new; then
+      echo "[-p] t/$x not updated" >>errors
+      notupdated=1
+    fi
+    ;;
+  * )
+    if test "$a" != file; then
+      echo "[-p] t/$x mangled" >>errors
+      mangled=1
+    fi
+  esac
+  x=`expr $x + 1`
+done
+if test $mangled = 1 || test $notupdated = 1; then
+  fail
+else
+  ok
+fi
+
+testing "-l works"
+fresh
+inplace -l -p "t/[0-9]*" -- \
+    sh -c 'read a b
+	   if test $b = 59; then
+	     exit 1
+           else
+             echo "modified $a $b"
+           fi' > t/output
+
+if grep t/59 t/output > /dev/null 2>&1; then
+  ok
+else
+  fail "[-l] t/59 missing from -l output"
+fi
+
+testing "-c works"
+fresh
+inplace -c -l -p "t/[0-9]*" -- \
+    sh -c 'read a b
+	   if test $b = 59; then
+	     exit 1
+           else
+             echo "modified $a $b"
+           fi' > t/output
+
+if grep t/59 t/output > /dev/null 2>&1; then
+  if test `wc -l < t/59` != 1; then
+    fail "[-c] output should be only 1 line"
+  else
+    ok
+  fi
+else
+  fail "[-c] t/59 missing from -l output"
+fi
+
+testing "subprocesses that fail are handled properly"
+echo one > t/1
+if inplace -f t/1 -- false 2>t/stderr; then
+  fail "inplace should exit nonzero if subprocess fails"
+else
+  if test `wc -l <t/stderr` != 0; then
+    fail "inplace should produce no extra error output if subprocess fails"
+  else
+    ok
+  fi
+fi
+
+testing "subprocess terminated by a signal handled properly"
+if inplace -f t/1 -- sh -c 'kill -9 $$' 2>t/stderr; then
+  fail "inplace should exit nonzero if subprocess dies on signal"
+else
+  if test `wc -l <t/stderr` != 1; then
+    fail "inplace should report subprocess signal"
+  else
+    ok
+  fi
+fi
+
+finished

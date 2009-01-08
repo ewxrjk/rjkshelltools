@@ -1,0 +1,104 @@
+2005-02-07 17:17:21 +0000  Richard Kettlewell  <rjk@greenend.org.uk>
+
+        * adverbio.c: -O FD:PATH where the open(PATH, ...) returned a value
+          matching FD would unhelpfuly close FD.  Problem reported by Colin
+          Watson.
+2005-02-07 17:14:08 +0000  Richard Kettlewell  <rjk@greenend.org.uk>
+
+        * with-lock.c: bogus string literal
+2003-07-19 17:35:12  Richard Kettlewell  <rjk@greenend.org.uk>
+
+        * check-tested-everything, test-*: check that every executable has
+          been tested
+        
+        * configure.ac: quieten autoconf
+        
+        * debug.c, utils.h, run-repeatedly.c: new debugging interface
+        
+        * test-run-repeatedly: fix test
+        
+2003-07-19 11:26:29  Richard Kettlewell  <rjk@greenend.org.uk>
+
+        * prepare: don't configure if asked not to
+        
+        * test-run-repeatedly: tests
+        
+2003-03-08  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* inplace.1: added some examples
+	
+2002-11-28  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* iobuffer.c: use a single big circular buffer rather than lots of
+	small buffers.  This makes more predictable and efficient use of
+	memory than the previous strategy.
+
+	Also change --max-buffer/-m to --buffer/-b since it is now the
+	exact buffer size.
+
+2002-11-23  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* More test infrastructure.  Various tests improved.
+
+	* run-repeatedly.c: underscore in filenames is allowed (to match
+	run-parts)
+
+2002-11-22  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* various changes to build on FreeBSD.  daemon (at least) doesn't
+	seem to work properly there though.
+
+2002-11-21  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* alarm.c: report failed setpgid correctly
+
+	* lots of <syscall>_e functions to keep error handling out of the
+	main code.  Convert a couple of malloc/realloc calls to the x-
+	versions too (for the same reason).
+
+	* more tests
+
+2002-11-20  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* test-daemon: more tests, including for some of the new features
+
+	* logfds.c: adjust option letters so daemon & logfds are
+	consistent.
+
+	* daemon.c: saner error output handling - essentially build part
+	of logfds into daemon.
+
+2002-11-18  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* anagrams.c: use dynamic memory allocation rather than fixed-size
+	buffers.  Now there should be no size limits other than available
+	memory.
+
+	Also, now you can specify multiple word lists, and duplicate words
+	don't cause duplicate anagrams.
+
+2002-11-17  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* new programs: iobuffer, anagrams
+
+2002-11-11  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* inplace.c: fix message reported when a subprocess gets a signal
+
+	* alarm: new --verbose option
+
+	* new programs: logfds, bind/accept/connect-socket, pidfile,
+	run-as, daemon, run-repeatedly, with-lock
+
+	* switch to new autoconf &c
+
+2001-09-09  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* configure.in: changed version to 0.6.0
+
+	* added "daemon" program.
+
+2001-08-12  Richard Kettlewell  <rjk@greenend.org.uk>
+
+	* merged "inplace" and "adverbio" into a single package
+

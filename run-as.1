@@ -1,0 +1,48 @@
+.TH run-as 1
+.SH NAME
+run-as \- run a command as a specified user
+.SH SYNOPSIS
+.B run-as
+.RI [ options ]
+.RB --
+.I user
+.RI [ group ]
+.B --
+.IR command ...
+.SH DESCRIPTION
+\fBrun-as\fR runs a command as a specified user.
+.PP
+If only \fIuser\fR is specified then the default group for that user
+is assumed.  If \fIgroup\fR is specified as well then that group is
+used.
+.SH OPTIONS
+.TP
+\fB-r\fR \fIdirectory\fR, \fB--root\fR \fIdirectory\fR
+Alter the root directory before changing user.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH NOTES
+The \fB--\fR arguments separating the options from the user and the
+user (and group) from the command are mandatory.
+.PP
+Although it would seem more logical to have separate programs for
+changing user and changing root directory, this can't be done.  If it
+were done in separate programs then the change root program wouldn't
+work if the change user program had already been run (since only
+privileged users can change the root directory of a process).  On the
+other hand if the change root program were run first, the change user
+program would no longer have access to the files necessary to look up
+the user information.
+.PP
+If \fB--root\fR is used, then the command must be available inside the
+chroot.  If this is a problem then you must write your program to
+start as a privileged user and change its root directory and UID
+itself.
+.SH "SEE ALSO"
+.BR chroot (2)
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

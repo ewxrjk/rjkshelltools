@@ -1,0 +1,39 @@
+.TH accept-socket 1
+.SH NAME
+accept-socket \- accept connections on a socket and run a command
+.SH SYNOPSIS
+.B accept-socket
+.RI [ options ]
+.RB [ -- ]
+.I lfd
+.I cfd
+.RB [ -- ]
+.IR command ...
+.SH DESCRIPTION
+\fBaccept-socket\fR listens on a socket with file descriptor \fIlfd\fR
+and accepts connections.  When one arrives it executes \fIcommand\fR
+in a child process, with file descriptor \fIcfd\fR redirected to the
+new connection.
+.SH OPTIONS
+.TP
+\fB-v\fR, \fB--verbose\fR
+Verbose mode.  Reports errors that would normally be silently ignored,
+and generates a line describing the origin of each new connection.
+.TP
+\fB-c\fR, \fB--no-close\fR
+Prevents \fIlfd\fR from being closed.  Normally it is closed before
+the command is executed.  If \fIlfd\fR and \fIcfd\fR are the same then
+this option has no useful effect.
+.TP
+\fB-n\fR, \fB--numeric\fR
+Don't do a DNS lookup for remote hostnames on incoming inet connections.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH "SEE ALSO"
+.BR bind-socket (1)
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

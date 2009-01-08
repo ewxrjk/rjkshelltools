@@ -1,0 +1,76 @@
+.TH logfds 1
+.SH NAME
+logfds \- log output of a command
+.SH SYNOPSIS
+.B logfds
+.RB [ -qcC ]
+.RB [ -m
+.IR days ]
+.B --
+.IR fd [, fd... ]
+.I pattern ...
+.B --
+.IR command ...
+.SH DESCRIPTION
+\fBlogfds\fR executes a command in a child process and redirects
+output from the specified file descriptors to logfiles.
+.PP
+The command line should consist of any options desired, followed by a
+list of redirections, followed by the command to execute.  Each of
+these three sections should be separated by a "--" argument.
+.PP
+Each redirection consists of two arguments.  The first is a list of
+comma-separated file descriptors to redirect, the second is a filename
+pattern.  This has the same syntax as the format string of
+\fBstrftime\fR(3).
+.PP
+It is an error to try to redirect the same file descriptor more than
+once.
+.PP
+The program performs the following steps.  Firstly pipes are set up
+for each file descriptor that is to be redirected.  The program
+forks.  In the child, each file descriptor to be redirected is
+replaced with the write end of the appropriate pipe; then the command
+is executed.
+.PP
+In the parent, the write ends of the pipes are closed, and input is
+read from the read ends and copied to the appropriate files.  For each
+fragment of data, the pattern is reinterpreted and (if the resulting
+name has changed) the output file re-opened.  Periodically old files
+are compressed or deleted as controlled by the \fB-c\fR and \fB-m\fR
+options.
+.PP
+If the logging process cannot write output to a file immediately
+(perhaps because the disc is full, for example) it buffers the data
+until it can.
+.PP
+When all the pipes reach end of file, the parent waits for the child
+to terminate.  When it does, it reports its exit status to standard
+error, unless either the exit status was 0 or the \fB-q\fR option was
+used; then it exits with the exit status of the child or, if the child
+was terminated by a signal, 128 plus the signal number.
+.SH OPTIONS
+.TP
+\fB-q\fR, \fB--quiet\fR
+Quiet mode.  Suppresses some informational messages.
+.TP
+\fB-c\fR, \fB--compress\fR
+Compress saved logfiles.
+.TP
+\fB-m\fR \fIdays\fR, \fB--max-log-age\fR \fIdays\fR
+Specify the maximum number of days to keep old log files.  By default,
+log files are kept forever.
+.TP
+\fB-C\fR, \fB--log-in-child\fR
+Reverses the usual behaviour and does the logging in the child
+process; the parent process executes the command.  This is useful
+where it is important that the process ID of the command is the same
+as the command starts with.
+.TP
+\fB-h\fR, \fB--help\fR
+Show summary of options.
+.TP
+\fB-V\fR, \fB--version\fR
+Show version of program.
+.SH AUTHOR
+Richard Kettlewell <rjk@greenend.org.uk>

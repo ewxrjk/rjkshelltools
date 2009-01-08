@@ -1,0 +1,96 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+# test utilities
+. tests.sh
+
+executable bind-socket
+executable daemon
+executable adverbio
+executable accept-socket
+executable pidfile
+executable connect-socket
+
+testing "unix sockets can be created"
+bind-socket -- 0 unix stream u0 -- true
+if test ! -e u0; then
+  fail "u0 does not exist"
+elif test -f u0; then
+  # -S is a GNUism?
+  fail "u0 is a regular file"
+else
+  ok
+fi
+
+testing "-p works with unix sockets"
+bind-socket -p -- 0 unix stream d1/u1 -- true
+if test ! -d d1; then
+  fail "d1 does not exist or is not a directory"
+elif test ! -e d1/u1; then
+  fail "d1/u1 does not exist"
+else
+  ok
+fi
+
+testing "we can connect to unix sockets"
+rm -f signal
+daemon --no-chdir -- \
+    pidfile -- server.pid \
+    bind-socket -- 0 unix stream u2 -- \
+    adverbio -O 3:signal -- \
+    accept-socket -- 0 1 -- \
+    sh -c '
+      echo "server"
+    '
+while test ! -f signal; do
+  :
+done
+read serverpid < server.pid
+if connect-socket 0 unix stream u2 -- \
+    sh -c '
+      read v
+      test "x$v" = "xserver"
+    '; then
+  ok
+else
+  fail
+fi
+kill $serverpid
+
+if test "x$PORT" != x; then
+  
+  testing "internet sockets can be created"
+  bind-socket -- 0 inet stream $PORT -- true
+  ok
+
+  testing "we can connect to internet sockets"
+  rm -f signal
+  daemon --no-chdir \
+      pidfile -- server.pid \
+      bind-socket -- 0 inet stream $PORT -- \
+      adverbio -O 3:signal -- \
+      accept-socket -- 0 1 -- \
+      sh -c '
+        echo "server"
+      '
+  while test ! -f signal; do
+    :
+  done
+  read serverpid < server.pid
+  if connect-socket 0 inet stream $PORT -- \
+      sh -c '
+        read v
+        test "x$v" = "xserver"
+      '; then
+    ok
+  else
+    fail
+  fi
+
+  kill $serverpid
+
+fi
+
+finished

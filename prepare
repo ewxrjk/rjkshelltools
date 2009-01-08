@@ -1,0 +1,26 @@
+#! /bin/sh
+
+set -e
+
+for file in install-sh COPYING INSTALL getopt.c getopt.h getopt1.c mkinstalldirs missing config.guess config.sub; do
+  for dir in /usr/share/autoconf /usr/lib/autoconf \
+             /usr/local/share/autoconf /usr/local/lib/autoconf \
+             /usr/share/automake /usr/lib/automake \
+             /usr/local/share/automake /usr/local/lib/automake \
+	     /usr/share/common-licenses \
+	     /usr/share/autoproject/cli/c/none \
+	     /usr/local/share/autoproject/cli/c/none; do
+    if test -f "$dir/$file"; then
+      ln -sf "$dir/$file" .
+      break
+    fi
+  done
+done
+rm -f config.cache
+aclocal
+autoheader
+automake -a
+autoconf
+if test -z "$NOCONFIGURE"; then
+  ./configure "$@"
+fi
