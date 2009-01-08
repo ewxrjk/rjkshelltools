@@ -17,7 +17,7 @@ dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 dnl 
 
-AC_DEFUN(RJK_C_GCC_ATTRIBUTES,[
+AC_DEFUN([RJK_C_GCC_ATTRIBUTES],[
   AC_CACHE_CHECK([for GNU C attribute syntax], rjk_cv_c_gcc_attributes, [
     AC_TRY_COMPILE([
 static int foo() __attribute__((unused));
@@ -33,7 +33,7 @@ static int foo(int __attribute__((unused)) argc,
  fi
 ])
 
-AC_DEFUN(RJK_STRSIGNAL, [
+AC_DEFUN([RJK_STRSIGNAL], [
   AC_CACHE_CHECK([for strsignal],
   rjk_cv_strsignal, [
     AC_EGREP_CPP(strsignal,[
@@ -69,7 +69,7 @@ dnl have names longer than sizeof sun_path.  sun_path is usually ridiculously
 dnl small and at least some systems don't allow you to extend beyond it,
 dnl however hopefully there are some out there that operate a more flexible
 dnl policy.
-AC_DEFUN(RJK_LONG_AF_UNIX_SOCKETS, [
+AC_DEFUN([RJK_LONG_AF_UNIX_SOCKETS], [
   AC_CACHE_CHECK([whether long AF_UNIX names work],
   rjk_cv_long_af_unix_sockets, [
     AC_TRY_RUN([
