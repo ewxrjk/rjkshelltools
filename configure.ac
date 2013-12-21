@@ -1,4 +1,4 @@
-	dnl 
+dnl
 dnl This file is part of rjkshelltools, Copyright (C) 2001 Richard Kettlewell
 dnl 
 dnl This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@ dnl
 dnl dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(rjkshelltools, 0.6.0+, richard+rjkshelltools@sfere.greenend.org.uk)
-AM_INIT_AUTOMAKE(rjkshelltools, 0.6.0+)
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([inplace.c])
 AM_CONFIG_HEADER([config.h])
 

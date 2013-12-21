@@ -137,6 +137,9 @@ Supported Platforms
 
 Installation
 
+If you got it from git:
+  autoreconf -si
+In any case:
   sh ./configure
   make
   make install              (as root)
