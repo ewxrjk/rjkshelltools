@@ -33,3 +33,6 @@ run-repeatedly
 stamp-h1
 with-lock
 wordlist.h
+*.[oa]
+*~
+tested
