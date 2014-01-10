@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
   
   for(;;) {
     socklen_t len = sizeof u;
-    int fd;
+    int fd, rc;
     fd_set fds;
     struct timeval tv;
     int p[2];
@@ -233,7 +233,9 @@ int main(int argc, char **argv) {
     close_e(p[1]);
     close_e(fd);
     /* wait for child to exec */
-    read(p[0], buffer, 1);
+    do {
+      rc = read(p[0], buffer, 1);
+    } while(rc < 0 && errno == EINTR);
     close_e(p[0]);
     /* do a speculative wait.  If the child has terminated by now
      * (e.g. if it encountered an error setting up) then without this

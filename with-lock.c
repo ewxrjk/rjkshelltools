@@ -71,8 +71,10 @@ static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
 static void __attribute__((noreturn))
     alarm_handler(int __attribute__((unused)) sig) {
   static const char msg[] = "with-lock: timed out\n";
+  int rc;
   
-  write(2, msg, sizeof msg);
+  rc = write(2, msg, sizeof msg);
+  (void)rc;                             /* quieten compiler */
   _exit(1);
 }
 
