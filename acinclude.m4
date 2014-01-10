@@ -18,7 +18,7 @@ dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl 
 
 AC_DEFUN([RJK_C_GCC_ATTRIBUTES],[
-  AC_CACHE_CHECK([for GNU C attribute syntax], rjk_cv_c_gcc_attributes, [
+  AC_CACHE_CHECK([for GNU C attribute syntax], [rjk_cv_c_gcc_attributes], [
     AC_TRY_COMPILE([
 static int foo() __attribute__((unused));
 static int foo(int __attribute__((unused)) argc,
@@ -35,14 +35,14 @@ static int foo(int __attribute__((unused)) argc,
 
 AC_DEFUN([RJK_STRSIGNAL], [
   AC_CACHE_CHECK([for strsignal],
-  rjk_cv_strsignal, [
-    AC_EGREP_CPP(strsignal,[
+  [rjk_cv_strsignal], [
+    AC_EGREP_CPP([strsignal],[
       #include <string.h>
       #include <signal.h>
     ], [
       rjk_cv_strsignal=yes
     ], [
-      AC_EGREP_CPP(strsignal,[
+      AC_EGREP_CPP([strsignal],[
 	#define _GNU_SOURCE
 	#include <string.h>
 	#include <signal.h>
@@ -54,8 +54,8 @@ AC_DEFUN([RJK_STRSIGNAL], [
     ])
   ])
   if test $rjk_cv_strsignal = gnu; then
-    AC_DEFINE(_GNU_SOURCE, 1, [define if needed to get strsignal])
-    AC_DEFINE(HAVE_STRSIGNAL, 1, [define if you have strsignal])
+    AC_DEFINE([_GNU_SOURCE], [1], [define if needed to get strsignal])
+    AC_DEFINE([HAVE_STRSIGNAL], [1], [define if you have strsignal])
   elif test $rjk_cv_strsignal = yes; then
     AC_DEFINE(HAVE_STRSIGNAL, 1, [define if you have strsignal])
   else
@@ -71,7 +71,7 @@ dnl however hopefully there are some out there that operate a more flexible
 dnl policy.
 AC_DEFUN([RJK_LONG_AF_UNIX_SOCKETS], [
   AC_CACHE_CHECK([whether long AF_UNIX names work],
-  rjk_cv_long_af_unix_sockets, [
+  [rjk_cv_long_af_unix_sockets], [
     AC_TRY_RUN([
       #include <sys/socket.h>
       #include <sys/un.h>
@@ -132,6 +132,6 @@ AC_DEFUN([RJK_LONG_AF_UNIX_SOCKETS], [
     ])
   ])
   if test "x$rjk_cv_long_af_unix_sockets" = xyes; then
-    AC_DEFINE(HAVE_LONG_AF_UNIX_SOCKETS, 1, [define if you have long AF_UNIX paths])
+    AC_DEFINE([HAVE_LONG_AF_UNIX_SOCKETS], [1], [define if you have long AF_UNIX paths])
   fi
 ])

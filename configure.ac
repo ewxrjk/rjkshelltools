@@ -17,7 +17,7 @@ dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl 
 dnl dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(rjkshelltools, 0.6.1, richard+rjkshelltools@sfere.greenend.org.uk)
+AC_INIT([rjkshelltools], [0.6.1], [richard+rjkshelltools@sfere.greenend.org.uk])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([inplace.c])
 AM_CONFIG_HEADER([config.h])
@@ -35,7 +35,7 @@ dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h string.h sys/uio.h)
+AC_CHECK_HEADERS([unistd.h string.h sys/uio.h])
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -56,15 +56,15 @@ fi
 RJK_LONG_AF_UNIX_SOCKETS
 
 dnl Checks for library functions.
-AC_CHECK_FUNC(getopt_long, [], [
-  AC_LIBOBJ(getopt)
-  AC_LIBOBJ(getopt1)
+AC_CHECK_FUNC([getopt_long], [], [
+  AC_LIBOBJ([getopt])
+  AC_LIBOBJ([getopt1])
 ])
-AC_CHECK_FUNCS(sysconf)
-AC_REPLACE_FUNCS(inet_aton)
+AC_CHECK_FUNCS([sysconf])
+AC_REPLACE_FUNCS([inet_aton])
 RJK_STRSIGNAL
 
-AC_CACHE_CHECK([for a word list], rjk_cv_wordlist, [
+AC_CACHE_CHECK([for a word list], [rjk_cv_wordlist], [
   if test "x$WORDLIST" = x; then
     rjk_cv_wordlist=""
     for path in /usr/share/dict/words /usr/dict/words; do
@@ -80,7 +80,7 @@ AC_CACHE_CHECK([for a word list], rjk_cv_wordlist, [
 if test "x$rjk_cv_wordlist" = x; then
   AC_MSG_ERROR([no word list found, set WORDLIST and send a patch])
 fi
-AC_SUBST(WORDLIST, "$rjk_cv_wordlist")
+AC_SUBST([WORDLIST], "$rjk_cv_wordlist")
 
 dnl GNU C features
 RJK_C_GCC_ATTRIBUTES
