@@ -30,7 +30,7 @@ int debugging;
 void debug(const char *fmt, ...) {
   va_list ap;
 
-  if(debug) {
+  if(debugging) {
     fprintf(stderr, "%s: ", program_name);
     va_start(ap, fmt);
     vfprintf(stderr, fmt, ap);
