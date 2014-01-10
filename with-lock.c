@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   char *path;
   struct flock fl;
   int forkme = 1;
-  pid_t pid, r;
+  pid_t pid;
   int w;
 
   setprogname(argv[0]);
@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
   if(forkme) {
     if((pid = fork_e())) {
       /* parent */
-      r = waitpid_e(pid, &w, 0);
+      waitpid_e(pid, &w, 0);
       if(WIFEXITED(w))
 	exit(w);
       if(WIFSIGNALED(w)) {

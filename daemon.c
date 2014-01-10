@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   int n;
   int nullfd;
   int pipefds[2];
-  pid_t pid, r;
+  pid_t pid;
   int max = 0;
   int compress = 0;
   struct sigaction sa, osa;
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 	close_e(p[n][0]);
     /* wait for the intermediate subprocess to terminate before
      * slamming stderr */
-    r = waitpid_e(pid, &n, 0);
+    waitpid_e(pid, &n, 0);
     if(n)
       fatal("logger subprocess %s", wstat(n));
     /* redirect stdout and/or stderr to the pipes */
@@ -196,7 +196,7 @@ int main(int argc, char **argv) {
      * session leader) to terminate and notify the caller of any error
      * via our exit status */
     exiter = _exit;
-    r = waitpid_e(pid, &n, 0);
+    waitpid_e(pid, &n, 0);
     if(n)
       fatal("subprocess %s", wstat(n));
     _exit(0);
