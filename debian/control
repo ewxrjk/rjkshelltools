@@ -1,0 +1,24 @@
+Source: rjk-shell-tools
+Section: utils
+Priority: optional
+Maintainer: Richard Kettlewell <rjk@greenend.org.uk>
+Standards-Version: 3.9.5
+Homepage: http://www.greenend.org.uk/rjk/sw/rjkshelltools.html
+
+Package: rjk-shell-tools
+Architecture: any
+Depends: ${misc:Depends},${shlibs:Depends}
+Description: Miscellaneous shell utilities
+ A small collection of shell utilities:
+ inplace - run filters with the same input as output
+ adverbio - non-shell I/O redirection
+ alarm - signal command after a timeout
+ logfds - automate logging
+ bind-socket - configure listening sockets
+ accept-socket - run commands with connections from listening sockets
+ pidfile - create PID files
+ run-as - run command as a given user
+ daemon - run command in background
+ run-repeatedly - keep commands in a directory constantly running
+ with-lock - run command with a lock held
+ iobuffer - add I/O buffering

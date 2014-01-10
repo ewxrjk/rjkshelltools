@@ -1,0 +1,6 @@
+rjk-shell-tools (0.6.1) unstable; urgency=low
+
+  * Initial Debianization.
+
+ -- Richard Kettlewell <rjk@greenend.org.uk>  Fri, 10 Jan 2014 20:23:17 +0000
+

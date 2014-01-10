@@ -17,7 +17,7 @@ dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl 
 dnl dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(rjkshelltools, 0.6.0+, richard+rjkshelltools@sfere.greenend.org.uk)
+AC_INIT(rjkshelltools, 0.6.1, richard+rjkshelltools@sfere.greenend.org.uk)
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([inplace.c])
 AM_CONFIG_HEADER([config.h])

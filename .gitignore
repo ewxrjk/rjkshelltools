@@ -39,3 +39,7 @@ GPATH
 GRTAGS
 GSYMS
 GTAGS
+debian/files
+debian/*.log
+debian/*.substvars
+debian/rjk-shell-tools
