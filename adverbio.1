@@ -42,7 +42,7 @@ redirection, and this fails.  It is necessary to reinvoke the shell to
 get it to perform the redirection at the right point:
 .PP
 .nf
-really sh -c 'ls > /root/file'
+really sh \-c 'ls > /root/file'
 .fi
 .PP
 However this is unacceptable for general use, as it requires shell
@@ -53,8 +53,8 @@ With
 .B adverbio
 the above becomes:
 .PP
-.fn
-really adverbio -o /root/file -- ls
+.nf
+really adverbio \-o /root/file \-\- ls
 .fi
 .PP
 which is slightly verbose, but requires no quoting.

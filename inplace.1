@@ -52,7 +52,7 @@ if you wish to execute it via the shell then you must do so
 explicitly, for example:
 .PP
 .nf
-inplace -p '*.c' -- ${SHELL} -c 'sed "${SED_COMMAND}"'
+inplace \-p '*.c' \-\- ${SHELL} \-c 'sed "${SED_COMMAND}"'
 .fi
 .PP
 Be careful to get the quoting right if you do this!
@@ -167,20 +167,20 @@ support it.
 To modify in place a collection of files chosen by a glob pattern:
 .PP
 .nf
-inplace -p '*.c' -- sed 's/foo_bar/foobar/g;'
+inplace \-p '*.c' \-\- sed 's/foo_bar/foobar/g;'
 .fi
 .PP
 To do the same but using \fBfind\fR(1) to collect filenames:
 .PP
 .nf
-find . -name '*.c' -print0 | \e
-  inplace -0 -- sed 's/foo_bar/foobar/g;'
+find . \-name '*.c' \-print0 | \e
+  inplace \-0 \-\- sed 's/foo_bar/foobar/g;'
 .fi
 .PP
 To sort a single file in place:
 .PP
 .nf
-inplace -f ~/addresses -- sort
+inplace \-f ~/addresses \-\- sort
 .fi
 .SH AUTHOR
 Richard Kettlewell <rjk@greenend.org.uk>
