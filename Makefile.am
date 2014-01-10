@@ -1,6 +1,6 @@
 # 
 # This file is part of rjkshelltools
-# Copyright (C) 2001, 2002 Richard Kettlewell
+# Copyright (C) 2001, 2002, 2013 Richard Kettlewell
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,18 +66,8 @@ man_MANS=adverbio.1 inplace.1 alarm.1 daemon.1 logfds.1 bind-socket.1 \
 
 EXTRA_DIST=$(man_MANS) getopt.c getopt1.c getopt.h \
 	README.inplace README.adverbio pidfile.in \
-	tests.sh test-run-repeatedly test-inplace test-logfds test-daemon \
-	test-pidfile test-bind-socket test-with-lock test-anagrams \
+	tests.sh $(TESTS)
 	getopt.c getopt.h getopt1.c
 
-check: all
-	rm -f tested
-	./test-inplace
-	./test-run-repeatedly
-	./test-logfds
-	./test-daemon
-	./test-pidfile
-	./test-bind-socket
-	./test-with-lock
-	./test-anagrams
-	./check-tested-everything
+TESTS=test-run-repeatedly test-inplace test-logfds test-daemon \
+	test-pidfile test-bind-socket test-with-lock test-anagrams

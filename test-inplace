@@ -8,7 +8,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable inplace
 
 fatal() {
   echo "$@" 1>&2

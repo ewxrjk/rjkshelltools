@@ -35,7 +35,6 @@ with-lock
 wordlist.h
 *.[oa]
 *~
-tested
 GPATH
 GRTAGS
 GSYMS

@@ -6,13 +6,6 @@ set -e
 # test utilities
 . ./tests.sh
 
-executable bind-socket
-executable daemon
-executable adverbio
-executable accept-socket
-executable pidfile
-executable connect-socket
-
 testing "unix sockets can be created"
 bind-socket -- 0 unix stream u0 -- true
 if test ! -e u0; then

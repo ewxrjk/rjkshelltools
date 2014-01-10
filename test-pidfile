@@ -5,7 +5,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable pidfile
 
 testing "pidfile works"
 pidfile -- pidfile.pid sh -c '

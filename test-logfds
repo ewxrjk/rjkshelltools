@@ -5,7 +5,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable logfds
 
 testing "log output goes to the right place"
 

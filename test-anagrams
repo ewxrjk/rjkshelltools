@@ -6,8 +6,6 @@ set -e
 # test utilities
 . ./tests.sh
 
-executable anagrams
-
 cat > words <<EOF
 bar
 boo

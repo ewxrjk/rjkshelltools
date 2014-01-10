@@ -5,8 +5,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable with-lock
-executable daemon
 
 testing "with-lock excludes concurrent operation"
 daemon -C -- with-lock -- lockfile sh -c "

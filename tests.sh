@@ -35,16 +35,11 @@ finished() {
   exit $test_status
 }
 
-executable() {
-  echo "$1" >> "$tested"
-}
-
 test_status=0
 
 PATH=`pwd`:$PATH
 
 # create a work directory
-tested=`pwd`/tested
 tmp=`pwd`/$$
 mkdir $tmp
 trap "cd / && rm -rf $tmp" EXIT INT HUP TERM

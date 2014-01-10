@@ -5,7 +5,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable daemon
 
 pwd=`pwd`
 

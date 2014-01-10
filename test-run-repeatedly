@@ -5,7 +5,6 @@ set -e
 
 # test utilities
 . ./tests.sh
-executable run-repeatedly
 
 # create a control directory
 mkdir progs
