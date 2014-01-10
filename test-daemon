@@ -15,7 +15,7 @@ testing "daemon runs its command in the background"
 # to respond within 120 seconds due to high system load or something,
 # but hopefuly that is rare...)
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 daemon -- sh -c "
   exec > $pwd/pipe
   echo \$\$
@@ -37,7 +37,7 @@ fi
 
 testing "daemonized processes are in the root directory"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 daemon -- sh -c "
   pwd > $pwd/pipe
 "
@@ -50,7 +50,7 @@ fi
 
 testing "daemon -C prevents change of directory"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 daemon -C -- sh -c "
   pwd > $pwd/pipe
 "
@@ -64,7 +64,7 @@ fi
 
 testing "daemonized processes have file descriptors closed"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 (
   exec 3> output
   daemon -C -- sh -c "
@@ -82,7 +82,7 @@ fi
 
 testing "daemon -n prevents file descriptors from being closed"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 (
   exec 3> output
   daemon -C -n -- sh -c "
@@ -100,7 +100,7 @@ fi
 
 testing "daemonized processes don't have a controlling terminal"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 daemon -C -- sh -c "
   set +e
   read x < /dev/tty
@@ -115,7 +115,7 @@ fi
 
 testing "daemonized processes can't pick up a controlling terminal"
 rm -f pipe
-mknod pipe p
+mkfifo pipe
 mytty=`tty`
 daemon -C -- sh -c "
   set +e

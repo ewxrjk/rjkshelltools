@@ -10,7 +10,7 @@ executable run-repeatedly
 # create a control directory
 mkdir progs
 
-mknod pipe1 p
+mkfifo pipe1
 
 # create a program to run
 cat <<EOF > progs/prog1
@@ -41,8 +41,8 @@ else
 fi
 
 testing "newly added programs are started"
-mknod pipe2 p
-mknod pipe2term p
+mkfifo pipe2
+mkfifo pipe2term
 cat <<EOF > progs/prog2
 #! /bin/sh
 set -e
@@ -85,7 +85,7 @@ fi
 
 testing "programs are restarted when they terminate"
 rm -f pipe1
-mknod pipe1 p
+mkfifo pipe1
 kill $pid1
 set +e
 read pid1 < pipe1
