@@ -86,7 +86,7 @@ dnl GNU C features
 RJK_C_GCC_ATTRIBUTES
 
 if test "$GCC" = yes; then
-  CC="${CC} -Wall -W -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wsign-compare -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wnested-externs"
+  CC="${CC} -Werror -Wall -W -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wsign-compare -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wnested-externs"
 fi
 
 AH_BOTTOM([
