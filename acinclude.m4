@@ -60,7 +60,7 @@ AC_DEFUN([RJK_STRSIGNAL], [
     AC_DEFINE(HAVE_STRSIGNAL, 1, [define if you have strsignal])
   else
     AC_DECL_SYS_SIGLIST
-    AC_LIBOBJ="${AC_LIBOBJ} strsignal.o"
+    AC_LIBOBJ([strsignal])
   fi
 ])
 
