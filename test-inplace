@@ -7,7 +7,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 fatal() {
   echo "$@" 1>&2

@@ -4,7 +4,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 # create a control directory
 mkdir progs

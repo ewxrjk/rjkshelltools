@@ -4,7 +4,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 testing "pidfile works"
 pidfile -- pidfile.pid sh -c '

@@ -4,7 +4,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 testing "log output goes to the right place"
 

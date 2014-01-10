@@ -64,10 +64,13 @@ man_MANS=adverbio.1 inplace.1 alarm.1 daemon.1 logfds.1 bind-socket.1 \
 	pidfile.1 connect-socket.1 run-as.1 accept-socket.1 with-lock.1 \
 	iobuffer.1 anagrams.1 run-repeatedly.1
 
-EXTRA_DIST=$(man_MANS) getopt.c getopt1.c getopt.h \
+EXTRA_DIST=$(man_MANS) \
 	README.inplace README.adverbio pidfile.in \
-	tests.sh $(TESTS)
-	getopt.c getopt.h getopt1.c
+	tests.sh $(TESTS) \
+	debian/changelog debian/compat debian/control \
+	debian/copyright debian/rules debian/sources/format
 
 TESTS=test-run-repeatedly test-inplace test-logfds test-daemon \
 	test-pidfile test-bind-socket test-with-lock test-anagrams
+
+export srcdir

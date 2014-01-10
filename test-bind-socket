@@ -4,7 +4,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 testing "unix sockets can be created"
 bind-socket -- 0 unix stream u0 -- true

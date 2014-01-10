@@ -56,10 +56,6 @@ fi
 RJK_LONG_AF_UNIX_SOCKETS
 
 dnl Checks for library functions.
-AC_CHECK_FUNC([getopt_long], [], [
-  AC_LIBOBJ([getopt])
-  AC_LIBOBJ([getopt1])
-])
 AC_CHECK_FUNCS([sysconf])
 AC_REPLACE_FUNCS([inet_aton])
 RJK_STRSIGNAL

@@ -4,7 +4,7 @@
 set -e
 
 # test utilities
-. ./tests.sh
+. ${srcdir:-.}/tests.sh
 
 testing "with-lock excludes concurrent operation"
 daemon -C -- with-lock -- lockfile sh -c "
