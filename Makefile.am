@@ -70,7 +70,7 @@ EXTRA_DIST=$(man_MANS) \
 	debian/changelog debian/compat debian/control \
 	debian/copyright debian/rules debian/sources/format
 
-TESTS=test-run-repeatedly test-inplace test-logfds test-daemon \
+TESTS=test-run-repeatedly test-inplace test-logfds test-daemon test-daemon-tty \
 	test-pidfile test-bind-socket test-with-lock test-anagrams
 
 export srcdir

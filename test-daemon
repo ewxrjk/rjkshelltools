@@ -97,38 +97,6 @@ else
   fail "write to fd 3 failed [$status] when it should have worked"
 fi
 
-testing "daemonized processes don't have a controlling terminal"
-rm -f pipe
-mkfifo pipe
-daemon -C -- sh -c "
-  set +e
-  read x < /dev/tty
-  echo \$? > pipe
-"
-read status < pipe
-if test "x$status" = x0; then
-  fail "read from /dev/tty succeeded when it should have failed"
-else
-  ok
-fi
-
-testing "daemonized processes can't pick up a controlling terminal"
-rm -f pipe
-mkfifo pipe
-mytty=`tty`
-daemon -C -- sh -c "
-  set +e
-  exec < $mytty
-  read x < /dev/tty
-  echo \$? > pipe
-"
-read status < pipe
-if test "x$status" = x0; then
-  fail "read from /dev/tty succeeded when it should have failed"
-else
-  ok
-fi
-
 rm -f stderr.output
 testing "daemon -l saves stderr"
 # since the log is written asynchronously, I can't think of a good way

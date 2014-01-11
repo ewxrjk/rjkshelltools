@@ -1,0 +1,52 @@
+#! /bin/sh
+
+# exit if something goes wrong
+set -e
+
+if tty >/dev/null; then
+
+  # test utilities
+  . ${srcdir:-.}/tests.sh
+
+  pwd=`pwd`
+
+  testing "daemonized processes don't have a controlling terminal"
+  rm -f pipe
+  mkfifo pipe
+  daemon -C -- sh -c "
+    set +e
+    read x < /dev/tty
+    echo \$? > pipe
+  "
+  read status < pipe
+  if test "x$status" = x0; then
+    fail "read from /dev/tty succeeded when it should have failed"
+  else
+    ok
+  fi
+
+  testing "daemonized processes can't pick up a controlling terminal"
+  rm -f pipe
+  mkfifo pipe
+  mytty=`tty`
+  daemon -C -- sh -c "
+    set +e
+    exec < $mytty
+    read x < /dev/tty
+    echo \$? > pipe
+  "
+  read status < pipe
+  if test "x$status" = x0; then
+    fail "read from /dev/tty succeeded when it should have failed"
+  else
+    ok
+  fi
+
+  finished
+
+else
+
+  echo "(no tty, cannot run these tests)"
+  exit 77
+
+fi
