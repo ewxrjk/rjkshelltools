@@ -43,3 +43,4 @@ debian/files
 debian/*.log
 debian/*.substvars
 debian/rjk-shell-tools
+*.tar.gz
