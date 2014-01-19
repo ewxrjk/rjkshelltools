@@ -84,7 +84,7 @@ fi
 
 testing "old logs are rotated with -m"
 logfds -D1 -m4 -- 1 rr-%H%M%S -- \
-    sh -c 'for x in 1 2 3 4 5 6 7 8 9; do echo spong; sleep 1; done'
+    sh -c 'for x in 1 2 3 4 5 6 7 8 9; do echo $x; sleep 1; done'
 set rr-*
 # we allow a couple of "days" worth of clearance
 if test $# -ge 6; then
