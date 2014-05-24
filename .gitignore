@@ -44,3 +44,7 @@ debian/*.log
 debian/*.substvars
 debian/rjk-shell-tools
 *.tar.gz
+compile
+*.trs
+*.log
+test-driver
