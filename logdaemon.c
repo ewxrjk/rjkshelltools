@@ -422,11 +422,6 @@ void ld_input_callback(struct input *i, struct timeval now) {
   struct logfile *l = i->log;
   int written;
 
-  /* open the logfile */
-  if(ld_open_logfile(l, now)) {
-    ld_suspend_input(i);
-    return;
-  }
   /* flush buffered data */
   while(l->bufsize) {
     bytes = write(l->fd, l->buffer, l->bufsize);
@@ -462,6 +457,11 @@ void ld_input_callback(struct input *i, struct timeval now) {
   if(bytes == 0) {
     /* end of file */
     ld_delete_input(i);
+    return;
+  }
+  /* open the logfile */
+  if(ld_open_logfile(l, now)) {
+    ld_suspend_input(i);
     return;
   }
   /* output the data */
