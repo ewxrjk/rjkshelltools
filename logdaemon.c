@@ -179,7 +179,7 @@ struct input *ld_new_input(int fd, void *l) {
   sigset_t ss;
 
   i->fd = fd;
-  i->suspended = 0;
+  i->suspended.tv_sec = i->suspended.tv_usec = 0;
   i->log = l;
   i->input_callback = ld_input_callback;
   i->daily_callback = ld_daily_callback;
@@ -218,13 +218,13 @@ void ld_delete_input(struct input *i) {
 }
 
 void ld_suspend_input(struct input *i) {
-  if(!i->suspended) {
+  if(!i->suspended.tv_sec) {
     sigset_t ss;
     
     block(&ss);
     FD_CLR(i->fd, &fds);
-    time(&i->suspended);
-    i->suspended += SUSPEND_PERIOD;
+    gettimeofday(&i->suspended, NULL);
+    i->suspended.tv_sec += SUSPEND_PERIOD;
     if(i->fd == maxinput)
       maxinput = -1;
     ++suspended;
@@ -233,30 +233,30 @@ void ld_suspend_input(struct input *i) {
 }
 
 void ld_resume_input(struct input *i) {
-  if(i->suspended) {
+  if(i->suspended.tv_sec) {
     sigset_t ss;
-    time_t now;
+    struct timeval now;
 
     block(&ss);
-    i->suspended = 0;
+    i->suspended.tv_sec = i->suspended.tv_usec = 0;
     FD_SET(i->fd, &fds);
     if(maxinput != -1 && i->fd > maxinput)
       maxinput = i->fd;
     --suspended;
     /* ld_loop calls back with signals blocked, so we do too */
-    time(&now);
+    gettimeofday(&now, NULL);
     (*i->input_callback)(i, now);
     unblock(&ss);
   }
 }
 
-int ld_open_logfile(struct logfile *l, time_t now) {
+int ld_open_logfile(struct logfile *l, struct timeval now) {
   char *newpath = 0;
   size_t size = PATH_MAX;
   struct tm *t;
   
   /* work out the filename we'll write to */
-  t = (l->usegmt ? gmtime : localtime)(&now);
+  t = (l->usegmt ? gmtime : localtime)(&now.tv_sec);
   /* keep expanding the buffer for the path until it's big enough */
   for(;;) {
     size_t len;
@@ -313,16 +313,17 @@ void ld_close_logfile(struct logfile *l) {
   }
 }
 
-time_t ld_next_daily(time_t now) {
+struct timeval ld_next_daily(struct timeval now) {
   /* XXX the user might want midnight local time; we currently only
    * implement midnight GMT.  Patches invited, probably from people
    * who live outside GMT-land. */
-  now += ld_day;
-  now -= now % ld_day;
+  now.tv_sec += ld_day;
+  now.tv_sec -= now.tv_sec % ld_day;
+  now.tv_usec = 0;
   return now;
 }
 
-static void daily(time_t now, time_t *next_daily) {
+static void daily(struct timeval now, struct timeval *next_daily) {
   struct input *i = ld_inputs;
 
   while(i) {
@@ -337,7 +338,7 @@ static void daily(time_t now, time_t *next_daily) {
 
 int ld_loop(void) {
   struct input *i;
-  time_t now, next_daily;
+  struct timeval now, next_daily;
   sigset_t ss;
 
   block(&ss);
@@ -349,24 +350,24 @@ int ld_loop(void) {
       FD_SET(i->fd, &fds);
   unblock(&ss);
   /* work out when to next do rotations, etc */
-  time(&now);
+  gettimeofday(&now, NULL);
   next_daily = ld_next_daily(now);
   while(ld_inputs) {
     fd_set rfds;
     struct timeval tv;
     int n;
 
-    time(&now);
+    gettimeofday(&now, NULL);
     block(&ss);
     /* see if we need to rotate yet */
-    if(now >= next_daily) {
+    if(tvcmp(&now, &next_daily) >= 0) {
       daily(now, &next_daily);
-      time(&now);
+      gettimeofday(&now, NULL);
     }
     /* unsuspend inputs */
     if(suspended) {
       for(i = ld_inputs; i; i = i->next) {
-	if(i->suspended && i->suspended <= now) {
+	if(i->suspended.tv_sec && tvcmp(&i->suspended, &now) <= 0) {
 	  ld_resume_input(i);
 	  if(!suspended)
 	    break;
@@ -383,8 +384,7 @@ int ld_loop(void) {
     /* copy file descriptor set */
     rfds = fds;
     /* work out timeout */
-    tv.tv_sec = next_daily - now;
-    tv.tv_usec = 0;
+    tv = tvsub(&next_daily, &now);
     if(suspended && tv.tv_sec > SELECT_RESOLUTION)
       tv.tv_sec = SELECT_RESOLUTION;
     unblock(&ss);
@@ -416,7 +416,7 @@ int ld_loop(void) {
   return 0;
 }
 
-void ld_input_callback(struct input *i, time_t now) {
+void ld_input_callback(struct input *i, struct timeval now) {
   char buffer[4096];
   int bytes;
   struct logfile *l = i->log;
@@ -488,7 +488,7 @@ void ld_input_callback(struct input *i, time_t now) {
   }
 }
 
-void ld_syslog_callback(struct input *i, time_t __attribute__((unused)) now) {
+void ld_syslog_callback(struct input *i, struct timeval __attribute__((unused)) now) {
   struct syslogfile *l = i->log;
   int bytes;
   char *nl;
@@ -524,7 +524,7 @@ void ld_syslog_callback(struct input *i, time_t __attribute__((unused)) now) {
   }
 }
 
-void ld_daily_callback(struct input *i, time_t now) {
+void ld_daily_callback(struct input *i, struct timeval now) {
   struct logfile *l = i->log;
   char *pattern;
   glob_t g;
@@ -574,7 +574,7 @@ void ld_daily_callback(struct input *i, time_t now) {
 	continue;
       /* only care about regular files */
       if(S_ISREG(sb.st_mode)
-	 && sb.st_mtime < now - l->rotate * ld_day) {
+	 && sb.st_mtime < now.tv_sec - l->rotate * ld_day) {
 	int m;
 	
 	if(unlink(path) < 0)
@@ -655,7 +655,7 @@ void ld_daily_callback(struct input *i, time_t now) {
       /* only care about regular files more than a day old,
        * i.e. better not comress a file we might re-open soon */
       if(S_ISREG(sb.st_mode)
-	 && sb.st_mtime < now - ld_day) {
+	 && sb.st_mtime < now.tv_sec - ld_day) {
 	pid_t pid, r;
 	int status;
 
@@ -756,6 +756,32 @@ char *ld_globtime(const char *pattern) {
     s[n++] = c;
   } while(c);
   return s;
+}
+
+int tvcmp(const struct timeval *a, const struct timeval *b) {
+  if(a->tv_sec < b->tv_sec)
+    return -1;
+  if(a->tv_sec > b->tv_sec)
+    return 1;
+  if(a->tv_usec < b->tv_usec)
+    return -1;
+  if(a->tv_usec > b->tv_usec)
+    return 1;
+  return 0;
+}
+
+struct timeval tvsub(const struct timeval *a, const struct timeval *b) {
+  struct timeval r;
+  r.tv_sec = a->tv_sec - b->tv_sec;
+  r.tv_usec = a->tv_usec - b->tv_usec;
+  if(r.tv_usec < 0) {
+    r.tv_usec += 1000000;
+    r.tv_sec -= 1;
+  } else if(r.tv_usec >= 1000000) {
+    r.tv_usec -= 1000000;
+    r.tv_sec += 1;
+  }
+  return r;
 }
 
 /*

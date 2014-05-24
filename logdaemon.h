@@ -45,11 +45,11 @@ struct syslogfile {
 struct input {
   struct input *next;			/* next input */
   int fd;				/* file descriptor */
-  time_t suspended;			/* suspended due to errors */
+  struct timeval suspended;		/* suspended due to errors */
   void (*input_callback)(struct input *,
-			 time_t);	/* input callback */
+			 struct timeval); /* input callback */
   void (*daily_callback)(struct input *,
-			 time_t);	/* daily callback */
+			 struct timeval); /* daily callback */
   void *log;				/* logfile to write to */
 };
 
@@ -99,7 +99,7 @@ void ld_resume_input(struct input *i);
 /* open the output file for logfile L corresponding to time NOW.
  * Returns 0 on success and -1 on error. */
 
-int ld_open_logfile(struct logfile *l, time_t now);
+int ld_open_logfile(struct logfile *l, struct timeval now);
 
 /* close any open output file for logfile L.  If no file is open, this
  * has no effect. */
@@ -107,7 +107,7 @@ void ld_close_logfile(struct logfile *l);
 
 /* return the next time, after NOW, that rotation, compression, etc,
  * should be started. */
-time_t ld_next_daily(time_t now);
+struct timeval ld_next_daily(struct timeval now);
 
 /* wait for and process events.  When there are no more inputs,
  * returns 0 (so set some up before calling!).  If an error occurs
@@ -132,7 +132,7 @@ int ld_loop(void);
  * If some or all of it cannot be written, it is buffered and the
  * input is suspended.
  */
-void ld_input_callback(struct input *i, time_t now);
+void ld_input_callback(struct input *i, struct timeval now);
 
 /* the default daily callback.  Everything here happens in terms of
  * the logfile for input I, rather than the input itself.
@@ -161,7 +161,7 @@ void ld_input_callback(struct input *i, time_t now);
  * regular files that match the pattern and are strictly older than a
  * day.  For these files, gzip is invoked to compress them.
  */
-void ld_daily_callback(struct input *i, time_t now);
+void ld_daily_callback(struct input *i, struct timeval now);
 
 /* alternative input callback for syslog support.  Data is read from
  * the input into a buffer.  Whenever a full line has been read, that
@@ -170,7 +170,7 @@ void ld_daily_callback(struct input *i, time_t now);
  * line is logged too.
  *
  * The caller is responsible for calling openlog() if desired. */
-void ld_syslog_callback(struct input *i, time_t now);
+void ld_syslog_callback(struct input *i, struct timeval now);
 
 /* create a string containing the glob-ified version of a strftime
  * pattern.  Returns 0 on error. */
@@ -187,6 +187,12 @@ extern struct input *ld_inputs;
 
 /* number of seconds between rotations (usually 86400, i.e. one day) */
 extern long ld_day;
+
+/* compare timevals */
+int tvcmp(const struct timeval *a, const struct timeval *b);
+
+/* subtract timevals */
+struct timeval tvsub(const struct timeval *a, const struct timeval *b);
 
 #endif /* LOGDAEMON_H */
 
