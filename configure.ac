@@ -1,6 +1,6 @@
 dnl
 dnl This file is part of rjkshelltools
-dnl Copyright (C) 2001, 2013, 2014 Richard Kettlewell
+dnl Copyright (C) 2001, 2013, 2014, 2015 Richard Kettlewell
 dnl 
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl 
 dnl dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([rjkshelltools], [0.6.1], [richard+rjkshelltools@sfere.greenend.org.uk])
+AC_INIT([rjkshelltools], [0.7], [richard+rjkshelltools@sfere.greenend.org.uk])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([inplace.c])
 AM_CONFIG_HEADER([config.h])
