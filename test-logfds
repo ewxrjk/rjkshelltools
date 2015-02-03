@@ -86,11 +86,12 @@ testing "old logs are rotated with -m"
 logfds -D1 -m4 -- 1 rr-%H%M%S -- \
     sh -c 'for x in 1 2 3 4 5 6 7 8 9; do echo $x; sleep 1; done'
 set rr-*
-# we allow a couple of "days" worth of clearance
+# This test is very timing-dependent, so be generous about the number
+# of logfiles we expect to see.
 if test $# -ge 6; then
   fail
   ls -l rr-* >> errors
-elif test $# -lt 4; then
+elif test $# -lt 2; then
   fail
   ls -l rr-* >> errors 2>&1
 else
