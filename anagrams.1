@@ -1,4 +1,4 @@
-.\" (c) 2014 Richard Kettlewell
+.\" (c) 2014, 2015 Richard Kettlewell
 .\"
 .\" This program is free software: you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -42,6 +42,11 @@ Add a word to the word list.
 This option does not prevent the default word list from being used.
 If you just want to specify words with \fB--word\fR and not use any
 word list file, use \fB--wordlist /dev/null\fR.
+.TP
+\fB-f\fR \fIREGEX\fR, \fB--filter\fR \fIREGEX\fR
+Filters any words matching \fIREGEX\fR out of any subsequent word lists
+loaded.
+This doesn't affect the \fB--word\fR option.
 .TP
 \fB-h\fR, \fB--help\fR
 Show summary of options.

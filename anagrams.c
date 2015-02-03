@@ -1,4 +1,4 @@
-/* (c) 1997, 2002 Richard Kettlewell.
+/* (c) 1997, 2002, 2015 Richard Kettlewell.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <regex.h>
 
 #include "utils.h"
 #include "wordlist.h"
@@ -35,6 +37,8 @@ static struct option const long_options[] =
   { "version", no_argument, 0, 'V' },
   { "wordlist", required_argument, 0, 'w' },
   { "word", required_argument, 0, 'e' },
+  { "filter", required_argument, 0, 'f' },
+  { "debug", no_argument, 0, 'd' },
   { 0, 0, 0, 0}
 };
 
@@ -47,6 +51,8 @@ static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
 "Options:\n"
 "  -w PATH, --wordlist PATH              Path to word list\n"
 "  -e WORD, --word WORD                  Add a word to the word list\n"
+"  -f FILTER, --filter REGEXP            Filter words out of word lists\n"
+"  -d, --debug                           Debug mode\n"
 "  -h, --help                            Usage message\n"
 "  -V, --version                         Version number\n"
 , fp) < 0)
@@ -63,6 +69,11 @@ struct word {
 
 static struct word *hashtable[HASHSIZE]; /* hash table for deduping */
 
+struct filter {
+    struct filter *next;
+    regex_t regex;
+} *filters;
+
 static void check(const char *prefix, const char *s, const struct word *w);
 static void anagrams(const char *word);
 static void sortword(char *word);
@@ -76,11 +87,12 @@ int main(int argc, char *argv[]) {
     int i;
     int n;
     int imported_some_words = 0;
+    struct filter *f;
 
     setprogname(argv[0]);
     
     while((n = getopt_long(argc, argv, 
-			   "hVw:e:",
+			   "hVw:e:f:d",
 			   long_options, (int *)0)) >= 0) {
 	switch(n) {
 	case 'V':
@@ -91,6 +103,10 @@ int main(int argc, char *argv[]) {
 	    usage(stdout, 0);
 	    return 0;
 
+        case 'd':
+            debugging = 1;
+            break;
+
 	case 'w':
 	    import_wordlist(optarg);
 	    imported_some_words = 1;
@@ -99,6 +115,19 @@ int main(int argc, char *argv[]) {
 	case 'e':
 	    addword(optarg);
 	    break;
+
+        case 'f':
+            f = xmalloc(sizeof *f);
+            f->next = filters;
+            filters = f;
+            int rc = regcomp(&f->regex, optarg,
+                             REG_EXTENDED|REG_NOSUB);
+            if(rc) {
+                char errbuf[1024];
+                regerror(rc, &f->regex, errbuf, sizeof errbuf);
+                fatal("compiling regexp '%s': %s", optarg, errbuf);
+            }
+            break;
 	    
 	default:
 	    usage(stderr, 1);
@@ -140,12 +169,20 @@ int main(int argc, char *argv[]) {
 static void import_wordlist(const char *path) {
     FILE *fp;
     char *line;
+    const struct filter *f;
     
     /* read in the word list */
     if(!(fp = fopen(path, "r")))
 	fatale("error opening %s", path);
     while((line = get_line(fp))) {
-	addword(stripnl(line));
+        stripnl(line);
+        for(f = filters; f; f = f->next)
+            if(!regexec(&f->regex, line, 0, 0, 0))
+                break;
+        if(!f)
+            addword(line);
+        else
+            debug("filtered: %s", line);
 	free(line);
     }
     if(ferror(fp))
