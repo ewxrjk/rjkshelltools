@@ -1,5 +1,6 @@
 /* 
-   This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
+   This file is part of rjkshellutils.
+   Copyright (C) 2001, 2014, 2015 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -252,7 +253,7 @@ void ld_resume_input(struct input *i) {
 
 int ld_open_logfile(struct logfile *l, struct timeval now) {
   char *newpath = 0;
-  size_t size = PATH_MAX;
+  size_t size = 1024;
   struct tm *t;
   
   /* work out the filename we'll write to */

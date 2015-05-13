@@ -85,6 +85,8 @@ if test "$GCC" = yes; then
   CC="${CC} -Werror -Wall -W -Wpointer-arith -Wbad-function-cast -Wwrite-strings -Wsign-compare -Wmissing-prototypes -Wmissing-declarations -Wmissing-noreturn -Wnested-externs"
 fi
 
+AC_DEFINE([_GNU_SOURCE], [1], [enable Glibc extensions])
+
 AH_BOTTOM([
 #if ! HAVE_GCC_ATTRIBUTES
 # define __attribute__(x)

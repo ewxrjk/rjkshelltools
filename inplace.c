@@ -3,7 +3,7 @@
 /*
 
   inplace - modify files in-place via any filter
-  Copyright (C) 2001 Richard Kettlewell
+  Copyright (C) 2001, 2015 Richard Kettlewell
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -195,14 +195,13 @@ static void input_pattern(const char *pattern) {
 /* compute the temporary filename used for filter output.  Needs to
  * know the subcommand's PID. */
 
-static char *output_filename(int file, pid_t pid,
-			     char buffer[], size_t bufsize) {
+static char *output_filename(int file, pid_t pid) {
   int n;
+  char *buffer;
 
-  if((n = snprintf(buffer, bufsize, "%s.inplace-tmp-%lx",
-		   filenames[file], (unsigned long)pid)) < 0
-     || (size_t)n >= bufsize)
-    fatal("filename too long");
+  if((n = asprintf(&buffer, "%s.inplace-tmp-%lx",
+		   filenames[file], (unsigned long)pid)) < 0)
+    fatale("asprintf");
   return buffer;
 }
 
@@ -211,8 +210,7 @@ static char *output_filename(int file, pid_t pid,
 static void subcommand_finished(pid_t pid, int wstat) {
   int n;
   int file;
-  const char *output_name;
-  char buffer[PATH_MAX];
+  char *output_name;
 
   /* find the subcommand */
   for(n = 0; n < max_subcommands && subcommands[n].pid != pid; ++n)
@@ -224,22 +222,22 @@ static void subcommand_finished(pid_t pid, int wstat) {
     return;
   }
   file = subcommands[n].file;
-  output_name = output_filename(file, pid, buffer, sizeof buffer);
+  output_name = output_filename(file, pid);
   if(!wstat) {
     /* implement -b option */
     if(backup_suffix) {
-      char backup_name[PATH_MAX];
+      char *backup_name;
       int s;
 
-      if((s = snprintf(backup_name, sizeof backup_name,
-		       "%s%s", filenames[file], backup_suffix)) < 0
-	 || (size_t)s >= sizeof backup_name) {
-	error("backup filename too long");
+      if((s = asprintf(&backup_name,
+		       "%s%s", filenames[file], backup_suffix)) < 0) {
+	errore("asprintf");
 	wstat = 1;
       } else if(link(filenames[file], backup_name) < 0) {
 	errore("error linking %s to %s", filenames[file], backup_name);
 	wstat = 1;
       }
+      free(backup_name);
     }
     if(!wstat && rename(output_name, filenames[file]) < 0) {
       errore("error renaming %s to %s", output_name, filenames[file]);
@@ -265,6 +263,7 @@ static void subcommand_finished(pid_t pid, int wstat) {
   /* account for the terminated process */
   --running;
   subcommands[n].pid = -1;
+  free(output_name);
 }
 
 static int usage(FILE *fp) {
@@ -417,8 +416,7 @@ int main(int argc, char **argv) {
       subcommands[n].file = file;
       switch(subcommands[n].pid = fork()) {
 	struct stat sb;
-	const char *output_name;
-	char buffer[PATH_MAX];
+        char *output_name;
 	int fd;
 	
       case 0:
@@ -427,7 +425,7 @@ int main(int argc, char **argv) {
 	dup2_e(fd, 0);
 	close_e(fd);
 	/* set up output */
-	output_name = output_filename(file, getpid(), buffer, sizeof buffer);
+	output_name = output_filename(file, getpid());
 	fd = open_e(output_name,
 		    O_WRONLY|O_CREAT|O_EXCL,
 		    0600);
