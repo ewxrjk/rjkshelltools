@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
       static int one = 1;
 
       if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one) < 0)
-	fatale("error calling setsocket(SOL_SOCKET, SO_REUSEADDR)");
+	fatale("error calling setsockopt(SOL_SOCKET, SO_REUSEADDR)");
     }
 
     if(bind(fd, &u.sa, len) < 0)
