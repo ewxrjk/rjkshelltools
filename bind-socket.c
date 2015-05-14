@@ -1,7 +1,7 @@
 /* 
    bind-socket - bind a listening socket and run a command
 
-   Copyright (C) 2001 Richard Kettlewell
+   Copyright (C) 2001, 2015 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -149,8 +149,13 @@ int main(int argc, char **argv) {
       /* turn on address re-use */
       static int one = 1;
 
-      if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one) < 0)
+      if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof one) < 0) {
+#if __GNU__
+	/* SO_REUSEADDR not implemented for PF_UNIX on Hurd */
+	if(!(type == PF_UNIX && errno == ENOPROTOOPT))
+#endif
 	fatale("error calling setsockopt(SOL_SOCKET, SO_REUSEADDR)");
+      }
     }
 
     if(bind(fd, &u.sa, len) < 0)
