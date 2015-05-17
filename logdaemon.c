@@ -386,6 +386,10 @@ int ld_loop(void) {
     rfds = fds;
     /* work out timeout */
     tv = tvsub(&next_daily, &now);
+    if(tv.tv_sec < 0) {
+      tv.tv_sec = 0;
+      tv.tv_usec = 0;
+    }
     if(suspended && tv.tv_sec > SELECT_RESOLUTION)
       tv.tv_sec = SELECT_RESOLUTION;
     unblock(&ss);
