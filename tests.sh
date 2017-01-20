@@ -61,3 +61,5 @@ tmp=`pwd`/$$
 mkdir $tmp
 trap "cd / && rm -rf $tmp" EXIT INT HUP TERM
 cd $tmp
+
+VALGRIND=${VALGRIND:-}

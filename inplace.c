@@ -189,7 +189,8 @@ static void input_pattern(const char *pattern) {
 #endif
   }
   for(n = 0; n < g.gl_pathc; ++n)
-    input_filename(g.gl_pathv[n]);
+    input_filename(xstrdup(g.gl_pathv[n]));
+  globfree(&g);
 }
 
 /* compute the temporary filename used for filter output.  Needs to

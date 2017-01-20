@@ -41,7 +41,7 @@ fresh() {
 
 testing "-f works"
 echo "file 1" > file1
-inplace -f file1 -- sed s/file/new/
+${VALGRIND} inplace -f file1 -- sed s/file/new/
 read a b < file1
 if test "x$a" != xnew || test "x$b" != x1; then
   fail
@@ -51,7 +51,7 @@ fi
 
 testing "-p works"
 fresh
-inplace -p "t/1*" -- sed s/file/new/
+${VALGRIND} inplace -p "t/1*" -- sed s/file/new/
 
 x=1
 mangled=0
@@ -85,7 +85,7 @@ fi
 
 testing "-l works"
 fresh
-inplace -l -p "t/[0-9]*" -- \
+${VALGRIND} inplace -l -p "t/[0-9]*" -- \
     sh -c 'read a b
 	   if test $b = 59; then
 	     exit 1
@@ -101,7 +101,7 @@ fi
 
 testing "-c works"
 fresh
-inplace -c -l -p "t/[0-9]*" -- \
+${VALGRIND} inplace -c -l -p "t/[0-9]*" -- \
     sh -c 'read a b
 	   if test $b = 59; then
 	     exit 1
@@ -121,7 +121,7 @@ fi
 
 testing "subprocesses that fail are handled properly"
 echo one > t/1
-if inplace -f t/1 -- false 2>t/stderr; then
+if ${VALGRIND} inplace -f t/1 -- false 2>t/stderr; then
   fail "inplace should exit nonzero if subprocess fails"
 else
   if test `wc -l <t/stderr` != 0; then
@@ -132,7 +132,7 @@ else
 fi
 
 testing "subprocess terminated by a signal handled properly"
-if inplace -f t/1 -- sh -c 'kill -9 $$' 2>t/stderr; then
+if ${VALGRIND} inplace -f t/1 -- sh -c 'kill -9 $$' 2>t/stderr; then
   fail "inplace should exit nonzero if subprocess dies on signal"
 else
   if test `wc -l <t/stderr` != 1; then
