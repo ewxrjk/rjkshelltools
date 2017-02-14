@@ -43,6 +43,8 @@ debian/files
 debian/*.log
 debian/*.substvars
 debian/rjk-shell-tools
+debian/.debhelper
+debian/debhelper-build-stamp
 *.tar.gz
 compile
 *.trs
