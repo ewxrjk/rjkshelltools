@@ -19,7 +19,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-  Send bug reports to richard+inplace@sfere.greenend.org.uk
+  Send bug reports to rjk@greenend.org.uk
   
 */
 
