@@ -482,11 +482,12 @@ void ld_input_callback(struct input *i, struct timeval now) {
     }
     written += n;
   }
-  if(bytes < written) {
+  size_t unwritten = bytes - written;
+  if(unwritten > 0) {
     /* buffer any remaining data */
-    l->buffer = xrealloc(l->buffer, l->bufsize + bytes - written);
-    memcpy(l->buffer + l->bufsize, buffer + written, bytes - written);
-    l->bufsize += bytes - written;
+    l->buffer = xrealloc(l->buffer, l->bufsize + unwritten);
+    memcpy(l->buffer + l->bufsize, buffer + written, unwritten);
+    l->bufsize += unwritten;
     /* close the logfile and come back to it in a while */
     ld_close_logfile(l);
     ld_suspend_input(i);
