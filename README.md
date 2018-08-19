@@ -69,7 +69,7 @@ This is a tool for daemonizing commands.
 ## run-repeatedly
 
 Runs programs found in a directory, restarting them when they
-terminate.  
+terminate.
 
 ## with-lock
 
@@ -139,18 +139,18 @@ and complex servers.)
 to write as server which handles requests on a UNIX-domain socket
 much as if it were invoked from inetd, you might use a fragment like
 the following:
- 
+
     bind-socket -- 3 unix stream /path/to/socket -- \
 	accept-socket -- 3 0 -- \
 	adverbio --redirect 1:0 -- \
 	/path/to/server/program
-  
+
 # Feedback
 
 Please report bugs via github.
 
 # Copyright
-  
+
 Copyright © 2001, 2002, 2014, 2015 Richard Kettlewell
 
 rjkshelltools is free software: you can redistribute it and/or modify
