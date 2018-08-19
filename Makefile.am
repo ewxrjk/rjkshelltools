@@ -64,7 +64,7 @@ man_MANS=adverbio.1 inplace.1 alarm.1 daemon.1 logfds.1 bind-socket.1 \
 	iobuffer.1 anagrams.1 run-repeatedly.1
 
 EXTRA_DIST=$(man_MANS) \
-	README.inplace README.adverbio pidfile.in \
+	README.md README.inplace README.adverbio pidfile.in \
 	tests.sh $(TESTS) \
 	debian/changelog debian/compat debian/control \
 	debian/copyright debian/rules debian/sources/format
