@@ -1,0 +1,11 @@
+dist: trusty
+language: c
+compiler:
+- clang
+- gcc
+
+script:
+- autoreconf -is
+- ./configure
+- make
+- VERBOSE=true make check
