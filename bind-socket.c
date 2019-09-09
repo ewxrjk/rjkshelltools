@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
   int listenq = 128;
   int reuse = 1;
   int parents = 0;
-  mode_t mode = -1;
+  mode_t mode = (mode_t)-1;
   int fdno;
   int fd;
 
