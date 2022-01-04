@@ -1,4 +1,5 @@
-/* $Header: /cvs/rjkshelltools/inplace.c,v 1.7 2002-11-21 14:58:52 richard Exp $ */
+/* $Header: /cvs/rjkshelltools/inplace.c,v 1.7 2002-11-21 14:58:52 richard Exp $
+ */
 
 /*
 
@@ -20,7 +21,7 @@
 
 
   Send bug reports to rjk@greenend.org.uk
-  
+
 */
 
 #include <config.h>
@@ -44,34 +45,34 @@
 /* possible sources of lists of filenames */
 
 enum input_type {
-  type_filename,			/* a single filename */
-  type_pattern,				/* a glob pattern to expand */
-  type_file,				/* a file to read rom */
+  type_filename, /* a single filename */
+  type_pattern,  /* a glob pattern to expand */
+  type_file,     /* a file to read rom */
 };
 
 /* one element of the list of sources of lists of filenames */
 
 struct input {
-  enum input_type type;			/* which kind of source */
-  const char *value;			/* filename or pattern */
+  enum input_type type; /* which kind of source */
+  const char *value;    /* filename or pattern */
 };
 
 /* record of a running command */
 
 struct subcommand {
-  pid_t pid;				/* process ID */
-  int file;				/* associated file number */
+  pid_t pid; /* process ID */
+  int file;  /* associated file number */
 };
 
-int filename_terminator = '\n';		/* terminator in files */
-const char *backup_suffix;		/* append to backup files */
-int continue_after_error;		/* process as many as possible */
-int read_from_stdin = 1;		/* read filenames from stdin? */
-int max_subcommands = 1;		/* how parallel? */
-int list_unprocessed;			/* dump unprocess to stdout? */
-int glob_flags = GLOB_ERR|GLOB_NOSORT;	/* for glob(3) to implement -g */
-int failed;				/* number of files that failed */
-int running;				/* number of running subcommands */
+int filename_terminator = '\n';          /* terminator in files */
+const char *backup_suffix;               /* append to backup files */
+int continue_after_error;                /* process as many as possible */
+int read_from_stdin = 1;                 /* read filenames from stdin? */
+int max_subcommands = 1;                 /* how parallel? */
+int list_unprocessed;                    /* dump unprocess to stdout? */
+int glob_flags = GLOB_ERR | GLOB_NOSORT; /* for glob(3) to implement -g */
+int failed;                              /* number of files that failed */
+int running;                             /* number of running subcommands */
 
 /* list of sources of lists of filenames */
 
@@ -92,11 +93,10 @@ static struct subcommand *subcommands;
 
 /* add some kind of source of list of filenames */
 
-static void add_input(enum input_type type,
-		      const char *parameter) {
+static void add_input(enum input_type type, const char *parameter) {
   if(number_of_inputs >= input_slots) {
     input_slots = input_slots ? 2 * input_slots : 128;
-    inputs = xrealloc(inputs, sizeof (struct input) * input_slots);
+    inputs = xrealloc(inputs, sizeof(struct input) * input_slots);
   }
   inputs[number_of_inputs].type = type;
   inputs[number_of_inputs].value = parameter;
@@ -108,9 +108,9 @@ static void add_input(enum input_type type,
 static void input_filename(const char *path) {
   if(number_of_filenames >= INT_MAX)
     fatal("too many filenames");
-  if(number_of_filenames >= filename_slots) { 
+  if(number_of_filenames >= filename_slots) {
     filename_slots = filename_slots ? 2 * filename_slots : 128;
-    filenames = xrealloc(filenames, sizeof (char *) * filename_slots);
+    filenames = xrealloc(filenames, sizeof(char *) * filename_slots);
   }
   filenames[number_of_filenames] = path;
   ++number_of_filenames;
@@ -163,7 +163,8 @@ static void input_file(const char *name) {
 
 /* error callback for glob */
 
-static int __attribute__((noreturn)) globerror(const char *path, int errno_value) {
+static int __attribute__((noreturn))
+globerror(const char *path, int errno_value) {
   fatal("error scanning files: %s: %s", path, strerror(errno_value));
 }
 
@@ -174,18 +175,15 @@ static void input_pattern(const char *pattern) {
   size_t n;
 
   switch(glob(pattern, glob_flags, globerror, &g)) {
-  case GLOB_NOSPACE:
-    fatal("error calling glob: %s", strerror(ENOMEM));
+  case GLOB_NOSPACE: fatal("error calling glob: %s", strerror(ENOMEM));
 #ifdef GLOB_ABORTED
-  case GLOB_ABORTED:
-    fatal("read error in glob");
+  case GLOB_ABORTED: fatal("read error in glob");
 #endif
 #ifdef GLOB_ABEND
     fatal("glob failed");
 #endif
 #ifdef GLOB_NOMATCH
-  case GLOB_NOMATCH:
-    return;
+  case GLOB_NOMATCH: return;
 #endif
   }
   for(n = 0; n < g.gl_pathc; ++n)
@@ -200,8 +198,9 @@ static char *output_filename(int file, pid_t pid) {
   int n;
   char *buffer;
 
-  if((n = asprintf(&buffer, "%s.inplace-tmp-%lx",
-		   filenames[file], (unsigned long)pid)) < 0)
+  if((n = asprintf(&buffer, "%s.inplace-tmp-%lx", filenames[file],
+                   (unsigned long)pid))
+     < 0)
     fatale("asprintf");
   return buffer;
 }
@@ -218,8 +217,8 @@ static void subcommand_finished(pid_t pid, int wstat) {
     ;
   /* ignore irrelevant processes */
   if(n >= max_subcommands) {
-    error("unknown subprocess %lu terminated with wstat %x",
-	  (unsigned long)pid, (unsigned)wstat);
+    error("unknown subprocess %lu terminated with wstat %x", (unsigned long)pid,
+          (unsigned)wstat);
     return;
   }
   file = subcommands[n].file;
@@ -230,13 +229,13 @@ static void subcommand_finished(pid_t pid, int wstat) {
       char *backup_name;
       int s;
 
-      if((s = asprintf(&backup_name,
-		       "%s%s", filenames[file], backup_suffix)) < 0) {
-	errore("asprintf");
-	wstat = 1;
+      if((s = asprintf(&backup_name, "%s%s", filenames[file], backup_suffix))
+         < 0) {
+        errore("asprintf");
+        wstat = 1;
       } else if(link(filenames[file], backup_name) < 0) {
-	errore("error linking %s to %s", filenames[file], backup_name);
-	wstat = 1;
+        errore("error linking %s to %s", filenames[file], backup_name);
+        wstat = 1;
       }
       free(backup_name);
     }
@@ -256,11 +255,9 @@ static void subcommand_finished(pid_t pid, int wstat) {
   /* report signals, since the subcommand may lack the opportunity to
    * do so */
   if(WIFSIGNALED(wstat))
-    error("filter for %s exited on signal %d (%s)%s",
-	  filenames[file],
-	  WTERMSIG(wstat),
-	  strsignal(WTERMSIG(wstat)),
-	  WCOREDUMP(wstat) ? " (core dumped)" : "");
+    error("filter for %s exited on signal %d (%s)%s", filenames[file],
+          WTERMSIG(wstat), strsignal(WTERMSIG(wstat)),
+          WCOREDUMP(wstat) ? " (core dumped)" : "");
   /* account for the terminated process */
   --running;
   subcommands[n].pid = -1;
@@ -268,41 +265,42 @@ static void subcommand_finished(pid_t pid, int wstat) {
 }
 
 static int usage(FILE *fp) {
-  return fprintf(fp,
-"Usage:\n"
-"\n"
-"  inplace OPTIONS -- COMMAND ...\n"
-"\n"
-"Options:\n"
-"\n"
-"  -0, --null                     Filenames terminate with 0, not \\n\n"
-"  -b SUFFIX, --backup=SUFFIX     Backup files, append SUFFIX to name\n"
-"  -c, --continue                 Continue after errors\n"
-"  -f FILENAME, --file=FILENAME   Process FILENAME\n"
-"  -g, --extended-glob            Extra syntax for --pattern\n"
-"  -i FILE, --input=FILE          Read filenames to process from FILE\n"
-"  -j MAX, --jobs=MAX             Up to MAX concurrent jobs (default 1)\n"
-"  -l, --list                     List unprocessed files to stdout\n"
-"  -p PATTERN, --pattern=PATTERN  Process files matching PATTERN\n"
-"  --version                      Display version number\n");
+  return fprintf(
+      fp,
+      "Usage:\n"
+      "\n"
+      "  inplace OPTIONS -- COMMAND ...\n"
+      "\n"
+      "Options:\n"
+      "\n"
+      "  -0, --null                     Filenames terminate with 0, not \\n\n"
+      "  -b SUFFIX, --backup=SUFFIX     Backup files, append SUFFIX to name\n"
+      "  -c, --continue                 Continue after errors\n"
+      "  -f FILENAME, --file=FILENAME   Process FILENAME\n"
+      "  -g, --extended-glob            Extra syntax for --pattern\n"
+      "  -i FILE, --input=FILE          Read filenames to process from FILE\n"
+      "  -j MAX, --jobs=MAX             Up to MAX concurrent jobs (default 1)\n"
+      "  -l, --list                     List unprocessed files to stdout\n"
+      "  -p PATTERN, --pattern=PATTERN  Process files matching PATTERN\n"
+      "  --version                      Display version number\n");
 }
 
 #define OPT_HELP (UCHAR_MAX + 1)
 #define OPT_VERSION (UCHAR_MAX + 2)
 
 static const struct option options[] = {
-  { "null", 0,0, '0' },
-  { "backup", 1, 0, 'b' },
-  { "continue", 0, 0, 'c' },
-  { "file", 1, 0, 'f' },
-  { "extended-glob", 0, 0, 'g' },
-  { "input", 1, 0, 'i' },
-  { "jobs", 1, 0, 'j' },
-  { "list", 0, 0, 'l' },
-  { "pattern", 1, 0, 'p' },
-  { "help", 0, 0, OPT_HELP },
-  { "version", 0, 0, OPT_VERSION },
-  { 0, 0, 0, 0 },
+    {"null", 0, 0, '0'},
+    {"backup", 1, 0, 'b'},
+    {"continue", 0, 0, 'c'},
+    {"file", 1, 0, 'f'},
+    {"extended-glob", 0, 0, 'g'},
+    {"input", 1, 0, 'i'},
+    {"jobs", 1, 0, 'j'},
+    {"list", 0, 0, 'l'},
+    {"pattern", 1, 0, 'p'},
+    {"help", 0, 0, OPT_HELP},
+    {"version", 0, 0, OPT_VERSION},
+    {0, 0, 0, 0},
 };
 
 int main(int argc, char **argv) {
@@ -321,24 +319,20 @@ int main(int argc, char **argv) {
   /* process argv */
   while((n = getopt_long(argc, argv, "0clgf:p:i:b:j:", options, 0)) >= 0) {
     switch(n) {
-    case '0':
-      filename_terminator = 0;
-      break;
+    case '0': filename_terminator = 0; break;
     case 'b':
       if(backup_suffix)
-	fatal("multiple '-b' options make no sense");
+        fatal("multiple '-b' options make no sense");
       backup_suffix = optarg;
       break;
-    case 'c':
-      continue_after_error = 1;
-      break;
+    case 'c': continue_after_error = 1; break;
     case 'f':
       read_from_stdin = 0;
       add_input(type_filename, optarg);
       break;
     case 'g':
 #if defined GLOB_BRACE && defined GLOB_TILDE
-      glob_flags |= GLOB_BRACE|GLOB_TILDE;
+      glob_flags |= GLOB_BRACE | GLOB_TILDE;
 #else
       fatal("-g is not supported on this system");
 #endif
@@ -351,30 +345,25 @@ int main(int argc, char **argv) {
       errno = 0;
       l = strtol(optarg, &e, 10);
       if(errno)
-	fatale("invalid argument to '-j'");
+        fatale("invalid argument to '-j'");
       if(e == optarg || *e || l <= 0 || l > INT_MAX)
-	fatal("invalid argument to '-j'");
+        fatal("invalid argument to '-j'");
       max_subcommands = l;
       break;
-    case 'l':
-      list_unprocessed = 1;
-      break;
+    case 'l': list_unprocessed = 1; break;
     case 'p':
       read_from_stdin = 0;
       add_input(type_pattern, optarg);
       break;
     case OPT_HELP:
-      if(usage(stdout) < 0
-	 || fclose(stdout) < 0)
-	fatale("error writing to  stdout");
+      if(usage(stdout) < 0 || fclose(stdout) < 0)
+        fatale("error writing to  stdout");
       return 0;
     case OPT_VERSION:
-      if(printf("%s\n", VERSION) < 0
-	 || fclose(stdout) < 0)
-	fatale("error writing to  stdout");
+      if(printf("%s\n", VERSION) < 0 || fclose(stdout) < 0)
+        fatale("error writing to  stdout");
       return 0;
-    default:
-      exit(-1);
+    default: exit(-1);
     }
   }
   /* if no other filename source specified, use stdin */
@@ -383,78 +372,69 @@ int main(int argc, char **argv) {
   /* read filenames from specified sources */
   for(n = 0; (size_t)n < number_of_inputs; ++n) {
     switch(inputs[n].type) {
-    case type_filename:
-      input_filename(inputs[n].value);
-      break;
-    case type_pattern:
-      input_pattern(inputs[n].value);
-      break;
-    case type_file:
-      input_file(inputs[n].value);
-      break;
+    case type_filename: input_filename(inputs[n].value); break;
+    case type_pattern: input_pattern(inputs[n].value); break;
+    case type_file: input_file(inputs[n].value); break;
     }
   }
   /* allocate memory for tracking subcommands */
-  subcommands = xmalloc(max_subcommands * sizeof (struct subcommand));
+  subcommands = xmalloc(max_subcommands * sizeof(struct subcommand));
   for(n = 0; n < max_subcommands; ++n) {
     subcommands[n].pid = -1;
     subcommands[n].file = -1;
   }
-  results = xmalloc(number_of_filenames * sizeof (int));
+  results = xmalloc(number_of_filenames * sizeof(int));
   for(n = 0; (size_t)n < number_of_filenames; ++n)
     results[n] = -1;
-  file = 0;				/* next file to process */
-  running = 0;				/* number of running subcommands */
+  file = 0;    /* next file to process */
+  running = 0; /* number of running subcommands */
   while(running > 0
-	|| ((size_t)file < number_of_filenames
-	    && (failed == 0 || continue_after_error))) {
+        || ((size_t)file < number_of_filenames
+            && (failed == 0 || continue_after_error))) {
     /* run additional subcommands if necessary/possible */
-    while((size_t)file < number_of_filenames
-	  && running < max_subcommands
-	  && (failed == 0 || continue_after_error)) {
+    while((size_t)file < number_of_filenames && running < max_subcommands
+          && (failed == 0 || continue_after_error)) {
       for(n = 0; n < max_subcommands && subcommands[n].pid != -1; ++n)
-	;
+        ;
       subcommands[n].file = file;
       switch(subcommands[n].pid = fork()) {
-	struct stat sb;
+        struct stat sb;
         char *output_name;
-	int fd;
-	
+        int fd;
+
       case 0:
-	/* set up input */
-	fd = open_e(filenames[file], O_RDONLY, 0);
-	dup2_e(fd, 0);
-	close_e(fd);
-	/* set up output */
-	output_name = output_filename(file, getpid());
-	fd = open_e(output_name,
-		    O_WRONLY|O_CREAT|O_EXCL,
-		    0600);
-	dup2_e(fd, 1);
-	close_e(fd);
-	/* fix up permissions */
-	if(fstat(0, &sb) < 0)
-	  fatale("error calling stat for %s", filenames[file]);
-	if(fchown(1, sb.st_uid, sb.st_gid) < 0)
-	  fatale("error calling fchown on %s", output_name);
-	if(fchmod(1, sb.st_mode) < 0)
-	  fatale("error calling fchmod on %s", output_name);
-	/* execute the program */
-	if(execvp(argv[optind], argv + optind) < 0)
-	  fatale("error calling execvp");
-	fatal("execvp unexpectedly returned");
-	
+        /* set up input */
+        fd = open_e(filenames[file], O_RDONLY, 0);
+        dup2_e(fd, 0);
+        close_e(fd);
+        /* set up output */
+        output_name = output_filename(file, getpid());
+        fd = open_e(output_name, O_WRONLY | O_CREAT | O_EXCL, 0600);
+        dup2_e(fd, 1);
+        close_e(fd);
+        /* fix up permissions */
+        if(fstat(0, &sb) < 0)
+          fatale("error calling stat for %s", filenames[file]);
+        if(fchown(1, sb.st_uid, sb.st_gid) < 0)
+          fatale("error calling fchown on %s", output_name);
+        if(fchmod(1, sb.st_mode) < 0)
+          fatale("error calling fchmod on %s", output_name);
+        /* execute the program */
+        if(execvp(argv[optind], argv + optind) < 0)
+          fatale("error calling execvp");
+        fatal("execvp unexpectedly returned");
+
       case -1:
-	errore("error calling fork");
-	results[file] = 1;
-	++file;
-	++failed;
-	break;
-	
+        errore("error calling fork");
+        results[file] = 1;
+        ++file;
+        ++failed;
+        break;
+
       default:
-	++file;
-	++running;
-	break;
+        ++file;
+        ++running;
+        break;
       }
     }
     /* if there are subcommands running, wait until one finishes */
@@ -464,11 +444,11 @@ int main(int argc, char **argv) {
 
       pid = waitpid_e(-1, &w, 0);
       if(pid > 0) {
-	subcommand_finished(pid, w);
-	/* pick up any other subcommands that finished, but don't
-	 * block */
-	while(running > 0 && (pid = waitpid_e(-1, &w, WNOHANG)) > 0)
-	  subcommand_finished(pid, w);
+        subcommand_finished(pid, w);
+        /* pick up any other subcommands that finished, but don't
+         * block */
+        while(running > 0 && (pid = waitpid_e(-1, &w, WNOHANG)) > 0)
+          subcommand_finished(pid, w);
       }
     }
   }
@@ -476,8 +456,8 @@ int main(int argc, char **argv) {
   if(list_unprocessed) {
     for(n = 0; (size_t)n < number_of_filenames; ++n)
       if(results[n] != 0)
-	if(printf("%s%c", filenames[n], filename_terminator) < 0)
-	  fatale("error writing to stdout");
+        if(printf("%s%c", filenames[n], filename_terminator) < 0)
+          fatale("error writing to stdout");
   }
   /* flush stdout */
   if(fclose(stdout) < 0)

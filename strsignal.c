@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -18,28 +18,28 @@
 
 #include <config.h>
 
-#if ! HAVE_STRSIGNAL
+#if !HAVE_STRSIGNAL
 
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
 
-#if ! SYS_SIGLIST_DECLARED
+#if !SYS_SIGLIST_DECLARED
 extern const char *const sys_siglist[];
 #endif
 
-#if ! defined NSIG && defined _NSIG
-# define NSIG _NSIG
+#if !defined NSIG && defined _NSIG
+#define NSIG _NSIG
 #endif
 
 const char *strsignal(int n) {
   static char buffer[128];
-  
+
   if(n < 1 || n > NSIG) {
     snprintf(buffer, sizeof buffer, "signal %d", n);
     return buffer;
   }
-  return sys_siglist[n];    
+  return sys_siglist[n];
 }
 
 #endif

@@ -22,7 +22,7 @@
 
 #include "uio.h"
 
-#if ! HAVE_SYS_UIO_H
+#if !HAVE_SYS_UIO_H
 ssize_t readv(int fd, const struct iovec *vector, int count) {
   int total = 0;
   int n;
@@ -33,14 +33,14 @@ ssize_t readv(int fd, const struct iovec *vector, int count) {
     if(bytes > 0) {
       total += bytes;
       if(bytes < vector[n].iov_len)
-	return total;
+        return total;
     } else if(bytes == 0)
       return total;
     else {
       if(total == 0)
-	return -1;
+        return -1;
       else
-	return total;
+        return total;
     }
   }
   return total;
@@ -56,21 +56,21 @@ ssize_t writev(int fd, const struct iovec *vector, int count) {
     if(bytes > 0) {
       total += bytes;
       if(bytes < vector[n].iov_len)
-	return total;
-    else {
-      if(total == 0)
-	return -1;
-      else
-	return total;
+        return total;
+      else {
+        if(total == 0)
+          return -1;
+        else
+          return total;
+      }
     }
+    return total;
   }
-  return total;
-}
 #endif
 
-/*
-Local Variables:
-c-basic-offset:2
-comment-column:40
-End:
-*/
+  /*
+  Local Variables:
+  c-basic-offset:2
+  comment-column:40
+  End:
+  */

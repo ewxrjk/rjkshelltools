@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ void *xmalloc(size_t n) {
 
 void *xrealloc(void *ptr, size_t n) {
   void *p;
-  
+
   if((p = realloc(ptr, n)))
     return p;
   fatale("realloc");

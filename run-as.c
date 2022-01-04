@@ -1,4 +1,4 @@
-/* 
+/*
    run-as - run a command as a specified user
 
    Copyright (C) 2001, 2002 Richard Kettlewell
@@ -29,26 +29,24 @@
 #include "utils.h"
 
 /* Option flags and variables */
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "root", required_argument, 0, 'r' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {"root", required_argument, 0, 'r'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  run-as [options] -- user [group] -- command ...\n"
-"\n"
-"Options:\n"
-"  -r DIRECTORY, --root DIRECTORY    Change root directory\n"
-"  -h, --help                        Usage message\n"
-"  -V, --version                     Version number\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  run-as [options] -- user [group] -- command ...\n"
+           "\n"
+           "Options:\n"
+           "  -r DIRECTORY, --root DIRECTORY    Change root directory\n"
+           "  -h, --help                        Usage message\n"
+           "  -V, --version                     Version number\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -59,27 +57,19 @@ int main(int argc, char **argv) {
   const char *user, *group;
 
   setprogname(argv[0]);
-  
-  while((n = getopt_long(argc, argv, 
-			 "hVr:",
-			 long_options, (int *)0)) >= 0) {
+
+  while((n = getopt_long(argc, argv, "hVr:", long_options, (int *)0)) >= 0) {
     switch(n) {
-    case 'V':
-      printf("run-as %s\n", VERSION);
-      return 0;
+    case 'V': printf("run-as %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
+    case 'h': usage(stdout, 0);
 
-    case 'r':
-      root = optarg;
-      break;
-      
-    default:
-      usage(stderr, 1);
+    case 'r': root = optarg; break;
+
+    default: usage(stderr, 1);
     }
   }
-  
+
   /* check for a user */
   if(optind >= argc)
     fatal("no user specified");
@@ -102,7 +92,7 @@ int main(int argc, char **argv) {
 
   /* do all the changes */
   setpriv(user, group, root);
-  
+
   /* execute the command */
   execvp(argv[optind], argv + optind);
   fatale("error executing \"%s\"", argv[optind]);

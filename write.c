@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ int writeall(int fd, const void *buffer, size_t nbytes) {
 
     if(n < 0) {
       if(errno == EINTR)
-	continue;
+        continue;
       return -1;
     }
     written += n;

@@ -38,36 +38,37 @@ static int changedir = 1;
 
 /* Option flags and variables */
 
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "no-close", no_argument, 0, 'n' },
-  { "no-chdir", no_argument, 0, 'C' },
-  { "log-stderr", required_argument, 0, 'l' },
-  { "log-stdout", required_argument, 0, 'L' },
-  { "compress", no_argument, 0, 'c' },
-  { "max-log-age", required_argument, 0, 'm' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {"no-close", no_argument, 0, 'n'},
+    {"no-chdir", no_argument, 0, 'C'},
+    {"log-stderr", required_argument, 0, 'l'},
+    {"log-stdout", required_argument, 0, 'L'},
+    {"compress", no_argument, 0, 'c'},
+    {"max-log-age", required_argument, 0, 'm'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  daemon [options] [--] command ...\n"
-"\n"
-"Options:\n"
-"  -C, --no-chdir                        Don't \"cd /\"\n"
-"  -n, --no-close                        Don't close file descriptors\n"
-"  -h, --help                            Usage message\n"
-"  -l PATTERN, --log-stderr PATTERN      Log standard error to a file\n"
-"  -L PATTERN, --log-stdout PATTERN      Log standard output to a file\n"
-"  -c, --compress                        Compress logs\n"
-"  -m DAYS, --max-log-age DAYS           Delete old logs\n"
-"  -V, --version                         Version number\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  daemon [options] [--] command ...\n"
+           "\n"
+           "Options:\n"
+           "  -C, --no-chdir                        Don't \"cd /\"\n"
+           "  -n, --no-close                        Don't close file "
+           "descriptors\n"
+           "  -h, --help                            Usage message\n"
+           "  -l PATTERN, --log-stderr PATTERN      Log standard error to a "
+           "file\n"
+           "  -L PATTERN, --log-stdout PATTERN      Log standard output to a "
+           "file\n"
+           "  -c, --compress                        Compress logs\n"
+           "  -m DAYS, --max-log-age DAYS           Delete old logs\n"
+           "  -V, --version                         Version number\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -80,48 +81,30 @@ int main(int argc, char **argv) {
   int max = 0;
   int compress = 0;
   struct sigaction sa, osa;
-  const char *logs[3] = { 0, 0, 0 };
+  const char *logs[3] = {0, 0, 0};
 
   setprogname(argv[0]);
 
-  while((n = getopt_long(argc, argv,
-			 "hVncl:m:CL:",
-			 long_options, (int *)0)) >= 0) {
+  while((n = getopt_long(argc, argv, "hVncl:m:CL:", long_options, (int *)0))
+        >= 0) {
     switch(n) {
-    case 'V':
-      printf("daemon %s\n", VERSION);
-      return 0;
+    case 'V': printf("daemon %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
-      return 0;
+    case 'h': usage(stdout, 0); return 0;
 
-    case 'n':
-      closefds = 0;
-      break;
+    case 'n': closefds = 0; break;
 
-    case 'C':
-      changedir = 0;
-      break;
+    case 'C': changedir = 0; break;
 
-    case 'm':
-      max = atoi(optarg);
-      break;
+    case 'm': max = atoi(optarg); break;
 
-    case 'c':
-      compress = 1;
-      break;
+    case 'c': compress = 1; break;
 
-    case 'l':
-      logs[2] = optarg;
-      break;
+    case 'l': logs[2] = optarg; break;
 
-    case 'L':
-      logs[1] = optarg;
-      break;
+    case 'L': logs[1] = optarg; break;
 
-    default:
-      usage(stderr, 1);
+    default: usage(stderr, 1);
     }
   }
 
@@ -149,33 +132,33 @@ int main(int argc, char **argv) {
     /* create the pipes */
     for(n = 1; n <= 2; ++n)
       if(logs[n]) {
-	pipe_e(p[n]);
-	l[n] = ld_new_logfile(logs[n]);
-	l[n]->rotate = max;
-	l[n]->compress = compress;
-	ld_new_input(p[n][0], l[n]);
+        pipe_e(p[n]);
+        l[n] = ld_new_logfile(logs[n]);
+        l[n]->rotate = max;
+        l[n]->compress = compress;
+        ld_new_input(p[n][0], l[n]);
       }
     /* create the daemon */
     if(!(pid = fork_e())) {
       exiter = _exit;
       setsid_e();
       for(n = 1; n <= 2; ++n)
-	if(logs[n])
-	  close_e(p[n][1]);
+        if(logs[n])
+          close_e(p[n][1]);
       fd = open_e("/dev/null", O_RDWR, 0);
       /* zap the real stdin/stdout/stderr */
       for(n = 0; n < 3; ++n)
-	dup2_e(fd, n);
+        dup2_e(fd, n);
       if(fd >= 3)
-	close_e(fd);
+        close_e(fd);
       if(!fork_e())
-	ld_loop();
+        ld_loop();
       _exit(0);
     }
     /* close the input ends now */
     for(n = 1; n <= 2; ++n)
       if(logs[n])
-	close_e(p[n][0]);
+        close_e(p[n][0]);
     /* wait for the intermediate subprocess to terminate before
      * slamming stderr */
     waitpid_e(pid, &n, 0);
@@ -184,8 +167,8 @@ int main(int argc, char **argv) {
     /* redirect stdout and/or stderr to the pipes */
     for(n = 1; n <= 2; ++n)
       if(logs[n] && p[n][1] != n) {
-	dup2_e(p[n][1], n);
-	close_e(p[n][1]);
+        dup2_e(p[n][1], n);
+        close_e(p[n][1]);
       }
   }
 
@@ -220,7 +203,7 @@ int main(int argc, char **argv) {
     nullfd = open_e("/dev/null", O_RDWR, 0);
     for(n = 0; n <= 2; ++n)
       if(!logs[n] && nullfd != n)
-	dup2_e(nullfd, n);
+        dup2_e(nullfd, n);
     if(nullfd > 2)
       close_e(nullfd);
   }

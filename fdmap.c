@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 #include "utils.h"
 
 struct fdmap {
-  struct fdmap *next;			/* next FD to redirect */
-  int current;				/* where the required file is now */
-  int target;				/* the FD we want it to be on */
+  struct fdmap *next; /* next FD to redirect */
+  int current;        /* where the required file is now */
+  int target;         /* the FD we want it to be on */
 };
 
 void fdmap_add(struct fdmap **fdsp, int current, int target) {
@@ -49,13 +49,13 @@ void fdmap_map(struct fdmap *fds) {
   for(f = fds; f; f = f->next) {
     if(f->current != f->target) {
       struct fdmap *g;
-      
+
       /* our target might already be in use, if so, dup the offending
        * FD out of the way */
       for(g = f->next; g && f->target != g->current; g = g->next)
-	;
+        ;
       if(g)
-	g->current = dup_e(g->current);
+        g->current = dup_e(g->current);
       dup2_e(f->current, f->target);
       close_e(f->current);
     }

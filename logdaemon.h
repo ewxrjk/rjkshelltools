@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -20,37 +20,35 @@
 #define LOGDAEMON_H
 
 struct logfile {
-  struct logfile *next;			/* next logfile */
-  int refs;				/* reference count */
-  char *pattern;			/* filename pattern */
-  char *path;				/* open path (or 0) */
-  int fd;				/* output file descriptor or -1 */
-  long date;				/* date of open version */
-  int rotate;				/* number of days to keep */
-  int compress;				/* whether to compress old copies */
-  int usegmt;				/* use GMT in names */
-  char *buffer;				/* buffer for saved data */
-  size_t bufsize;			/* buffer size */
+  struct logfile *next; /* next logfile */
+  int refs;             /* reference count */
+  char *pattern;        /* filename pattern */
+  char *path;           /* open path (or 0) */
+  int fd;               /* output file descriptor or -1 */
+  long date;            /* date of open version */
+  int rotate;           /* number of days to keep */
+  int compress;         /* whether to compress old copies */
+  int usegmt;           /* use GMT in names */
+  char *buffer;         /* buffer for saved data */
+  size_t bufsize;       /* buffer size */
 };
 
 struct syslogfile {
-  struct syslogfile *next;		/* next logfile */
-  int pri;				/* priority */
-  int fac;				/* facility */
-  char *buffer;				/* line buffer */
-  size_t bufsize;			/* buffer size */
-  size_t bytes;				/* bytes in buffer */
+  struct syslogfile *next; /* next logfile */
+  int pri;                 /* priority */
+  int fac;                 /* facility */
+  char *buffer;            /* line buffer */
+  size_t bufsize;          /* buffer size */
+  size_t bytes;            /* bytes in buffer */
 };
 
 struct input {
-  struct input *next;			/* next input */
-  int fd;				/* file descriptor */
-  struct timeval suspended;		/* suspended due to errors */
-  void (*input_callback)(struct input *,
-			 struct timeval); /* input callback */
-  void (*daily_callback)(struct input *,
-			 struct timeval); /* daily callback */
-  void *log;				/* logfile to write to */
+  struct input *next;       /* next input */
+  int fd;                   /* file descriptor */
+  struct timeval suspended; /* suspended due to errors */
+  void (*input_callback)(struct input *, struct timeval); /* input callback */
+  void (*daily_callback)(struct input *, struct timeval); /* daily callback */
+  void *log; /* logfile to write to */
 };
 
 /* create a new logfile object.  Initialize the pattern field with a

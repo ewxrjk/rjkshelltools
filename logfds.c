@@ -1,4 +1,4 @@
-/* 
+/*
    logfds - log output of a command
 
    Copyright (C) 2001 Richard Kettlewell
@@ -33,33 +33,32 @@
 #include "logdaemon.h"
 
 /* Option flags and variables */
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "compress", no_argument, 0, 'c' },
-  { "quiet", no_argument, 0, 'q' },
-  { "max-log-age", required_argument, 0, 'm' },
-  { "log-in-child", no_argument, 0, 'C' },
-  { "day", required_argument, 0, 'D' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {"compress", no_argument, 0, 'c'},
+    {"quiet", no_argument, 0, 'q'},
+    {"max-log-age", required_argument, 0, 'm'},
+    {"log-in-child", no_argument, 0, 'C'},
+    {"day", required_argument, 0, 'D'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  logfds [options] [--] fd[,fd...] path ... [--] command ...\n"
-"\n"
-"Options:\n"
-"  -c, --compress                        Compress logs\n"
-"  -m DAYS, --max-log-age DAYS           Delete old logs\n"
-"  -q                                    Quiet mode\n"
-"  -C                                    Log in the child, not the parent\n"
-"  -h, --help                            Usage message\n"
-"  -V, --version                         Version number\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  logfds [options] [--] fd[,fd...] path ... [--] command ...\n"
+           "\n"
+           "Options:\n"
+           "  -c, --compress                        Compress logs\n"
+           "  -m DAYS, --max-log-age DAYS           Delete old logs\n"
+           "  -q                                    Quiet mode\n"
+           "  -C                                    Log in the child, not the "
+           "parent\n"
+           "  -h, --help                            Usage message\n"
+           "  -V, --version                         Version number\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -75,46 +74,30 @@ int main(int argc, char **argv) {
   pid_t r;
 
   setprogname(argv[0]);
-  
-  while((n = getopt_long(argc, argv, 
-			 "hVqcm:D:C",
-			 long_options, (int *)0)) >= 0) {
+
+  while((n = getopt_long(argc, argv, "hVqcm:D:C", long_options, (int *)0))
+        >= 0) {
     switch(n) {
-    case 'V':
-      printf("logfds %s\n", VERSION);
-      return 0;
+    case 'V': printf("logfds %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
+    case 'h': usage(stdout, 0);
 
-    case 'm':
-      max = atoi(optarg);
-      break;
+    case 'm': max = atoi(optarg); break;
 
-    case 'c':
-      compress = 1;
-      break;
+    case 'c': compress = 1; break;
 
-    case 'q':
-      ++quiet;
-      break;
+    case 'q': ++quiet; break;
 
-    case 'D':
-      ld_day = atol(optarg);
-      break;
+    case 'D': ld_day = atol(optarg); break;
 
-    case 'C':
-      loginchild = 1;
-      break;
-      
-    default:
-      usage(stderr, 1);
+    case 'C': loginchild = 1; break;
+
+    default: usage(stderr, 1);
     }
   }
-  
+
   /* process all redirections */
-  while(optind < argc
-	&& isdigit(argv[optind][0])) {
+  while(optind < argc && isdigit(argv[optind][0])) {
     char **v;
     int p[2];
     struct logfile *l;
@@ -132,9 +115,9 @@ int main(int argc, char **argv) {
       fatal("empty file descriptor list in redirection");
     for(n = 0; v[n]; ++n) {
       int fd;
-      
+
       if(!v[n][0] || v[n][strspn(v[n], "0123456789")])
-	fatal("invalid file descriptor in redirection");
+        fatal("invalid file descriptor in redirection");
       /* we dup() file descriptors to keep the fdmap_* functions
        * happy */
       fd = first ? p[1] : dup_e(p[1]);
@@ -169,7 +152,7 @@ int main(int argc, char **argv) {
       fatale("error executing %s", argv[optind]);
     fatal("execvp succeeded but returned");
   }
-  
+
   /* close writer ends of pipes */
   fdmap_close(fds);
   fdmap_free(fds);
@@ -177,7 +160,7 @@ int main(int argc, char **argv) {
   /* enter the logger event loop */
   if(ld_loop())
     exit(-1);
-  
+
   /* no more inputs; wait for the child to terminate */
   if(!loginchild) {
     r = waitpid_e(pid, &n, 0);
@@ -186,8 +169,8 @@ int main(int argc, char **argv) {
 
     /* report exit status if the child reported an exit status */
     if(n && !quiet)
-      fprintf(stderr, "%s[%lu] %s\n",
-	      argv[optind], (unsigned long)pid, wstat(n));
+      fprintf(stderr, "%s[%lu] %s\n", argv[optind], (unsigned long)pid,
+              wstat(n));
   }
 
   /* pass an appropriate exit status to the caller */

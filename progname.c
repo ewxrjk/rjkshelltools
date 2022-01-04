@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshelltools, Copyright (C) 2001 Richard Kettlewell.
 
    This program is free software: you can redistribute it and/or modify

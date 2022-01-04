@@ -1,4 +1,4 @@
-/* 
+/*
    run-repeatedly - run and restart programs
 
    Copyright (C) 2001, 2003 Richard Kettlewell
@@ -37,49 +37,48 @@
 #include "utils.h"
 
 struct daemon {
-  struct daemon *next;			/* next daemon */
-  char *path;				/* path */
-  pid_t pid;				/* process ID or -1 */
-  int present;				/* true if still present */
-  int shutting_down;			/* true if already sent a
-					 * shutdown signal */
-  time_t last;				/* last start time */
+  struct daemon *next; /* next daemon */
+  char *path;          /* path */
+  pid_t pid;           /* process ID or -1 */
+  int present;         /* true if still present */
+  int shutting_down;   /* true if already sent a
+                        * shutdown signal */
+  time_t last;         /* last start time */
 };
 
-static struct daemon *daemons;		/* list of managed daemons */
-static int rescan_interval = 5*60;	/* interval between rescans */
-static int execute_interval = 1*60;	/* interval between executions */
-static const char *directory;		/* directory of daemons */
-static int shutting_down;		/* shutting down? */
-static int shutdown_obsolete;		/* terminate obsolete children */
+static struct daemon *daemons;        /* list of managed daemons */
+static int rescan_interval = 5 * 60;  /* interval between rescans */
+static int execute_interval = 1 * 60; /* interval between executions */
+static const char *directory;         /* directory of daemons */
+static int shutting_down;             /* shutting down? */
+static int shutdown_obsolete;         /* terminate obsolete children */
 
 /* option flags and variables */
 
-static struct option const long_options[] =
-{
-  { "rescan-interval", required_argument, 0, 'i' },
-  { "execute-interval", required_argument, 0, 'e' },
-  { "shutdown", no_argument, 0, 's' },
-  { "debug", no_argument, 0, 'd' },
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"rescan-interval", required_argument, 0, 'i'},
+    {"execute-interval", required_argument, 0, 'e'},
+    {"shutdown", no_argument, 0, 's'},
+    {"debug", no_argument, 0, 'd'},
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  run-repeatedly [options] [--] directory\n"
-"\n"
-"Options:\n"
-"  -r SECONDS, --rescan-interval SECONDS   Set rescan interval\n"
-"  -e SECONDS, --execute-interval SECONDS  Set execution interval\n"
-"  -s, --shutdown                          Shut down children on removal\n"
-"  -h, --help                              Usage message\n"
-"  -V, --version                           Version number\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  run-repeatedly [options] [--] directory\n"
+           "\n"
+           "Options:\n"
+           "  -r SECONDS, --rescan-interval SECONDS   Set rescan interval\n"
+           "  -e SECONDS, --execute-interval SECONDS  Set execution interval\n"
+           "  -s, --shutdown                          Shut down children on "
+           "removal\n"
+           "  -h, --help                              Usage message\n"
+           "  -V, --version                           Version number\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -98,8 +97,7 @@ static int ratelimit(int interval, time_t *timep) {
   time_t now;
 
   time(&now);
-  if(*timep == 0
-     || now >= *timep + interval) {
+  if(*timep == 0 || now >= *timep + interval) {
     *timep = now;
     return 0;
   } else {
@@ -114,13 +112,13 @@ static int rescan(void) {
   DIR *dp;
   struct dirent *de;
   struct daemon *d;
-  
+
   static time_t last;
 
   debug("rescanning");
   if(ratelimit(rescan_interval, &last))
     return 0;
-  
+
   for(d = daemons; d; d = d->next)
     d->present = 0;
   if(!(dp = opendir(directory))) {
@@ -134,10 +132,9 @@ static int rescan(void) {
     struct daemon *d;
 
     for(i = 0; de->d_name[i]; ++i)
-      if(!(isalnum((unsigned char)de->d_name[i])
-	   || de->d_name[i] == '_'
-	   || de->d_name[i] == '-'))
-	break;
+      if(!(isalnum((unsigned char)de->d_name[i]) || de->d_name[i] == '_'
+           || de->d_name[i] == '-'))
+        break;
     if(de->d_name[i])
       continue;
     fullpath = xstrdupcat3(directory, "/", de->d_name);
@@ -146,12 +143,11 @@ static int rescan(void) {
       free(fullpath);
       continue;
     }
-    if(!S_ISREG(sb.st_mode)
-       || ((sb.st_mode & 0111) == 0))
+    if(!S_ISREG(sb.st_mode) || ((sb.st_mode & 0111) == 0))
       continue;
     for(d = daemons; d; d = d->next)
       if(!strcmp(d->path, fullpath))
-	break;
+        break;
     if(!d) {
       d = xmalloc(sizeof *d);
       d->next = daemons;
@@ -170,7 +166,7 @@ static int rescan(void) {
   if(debugging)
     for(d = daemons; d; d = d->next)
       if(d->present)
-	debug("found %s", d->path);
+        debug("found %s", d->path);
   return 0;
 }
 
@@ -185,9 +181,7 @@ static void restart(struct daemon *d) {
   if(ratelimit(execute_interval, &d->last))
     return;
   switch(pid = fork()) {
-  case -1:
-    errore("[%s] error calling fork", d->path);
-    break;
+  case -1: errore("[%s] error calling fork", d->path); break;
   case 0:
     alarm(0);
     exiter = _exit;
@@ -198,9 +192,7 @@ static void restart(struct daemon *d) {
       fatale("[%s] error calling setpgid", d->path);
     execl(d->path, d->path, (const char *)0);
     fatale("error executing %s", d->path);
-  default:
-    d->pid = pid;
-    break;
+  default: d->pid = pid; break;
   }
 }
 
@@ -213,7 +205,7 @@ static void startall(void) {
     /* restart any dead daemons */
     for(d = daemons; d; d = d->next)
       if(d->present && d->pid == (pid_t)-1)
-	restart(d);
+        restart(d);
   }
 }
 
@@ -236,7 +228,7 @@ static void cleanup(void) {
 
 static void alarm_handler(int __attribute__((unused)) sig) {
   debug("SIGALRM");
-      
+
   /* spot changes to the control directory */
   rescan();
   if(shutdown_obsolete) {
@@ -244,15 +236,12 @@ static void alarm_handler(int __attribute__((unused)) sig) {
     struct daemon *d;
 
     for(d = daemons; d; d = d->next)
-      if(d->pid != (pid_t)-1
-	 && !d->present
-	 && !d->shutting_down) {
-	debug("shutting down %s", d->path);
-	if(kill(d->pid, SIGTERM) < 0)
-	  errore("error sending signal %d (%s) to %s[%lu]",
-		 SIGTERM, strsignal(SIGTERM),
-		 d->path, (unsigned long)d->pid);
-	d->shutting_down = 1;
+      if(d->pid != (pid_t)-1 && !d->present && !d->shutting_down) {
+        debug("shutting down %s", d->path);
+        if(kill(d->pid, SIGTERM) < 0)
+          errore("error sending signal %d (%s) to %s[%lu]", SIGTERM,
+                 strsignal(SIGTERM), d->path, (unsigned long)d->pid);
+        d->shutting_down = 1;
       }
   }
   /* start any children that have terminated */
@@ -272,7 +261,7 @@ static void child_handler(int __attribute__((unused)) sig) {
   /* pick up any terminated children */
   while((p = waitpid(-1, &w, WNOHANG)) > 0) {
     struct daemon *d;
-    
+
     /* find which child terminated, if any */
     for(d = daemons; d && d->pid != p; d = d->next)
       ;
@@ -285,12 +274,8 @@ static void child_handler(int __attribute__((unused)) sig) {
   if(p < 0) {
     switch(errno) {
     case EINTR:
-    case ECHILD:
-      debug("ignored error calling waitpid");
-      break;
-    default:
-      errore("error calling waitpid");
-      break;
+    case ECHILD: debug("ignored error calling waitpid"); break;
+    default: errore("error calling waitpid"); break;
     }
   } else if(p == 0)
     debug("waitpid returned 0");
@@ -305,21 +290,20 @@ static void child_handler(int __attribute__((unused)) sig) {
     if(signal(shutting_down, SIG_DFL) == SIG_ERR)
       fatale("error calling signal");
     if(kill(getpid(), shutting_down) < 0)
-      fatale("error sending signal %d (%s) to self [%lu]",
-	     shutting_down, strsignal(shutting_down),
-	     (unsigned long)getpid());
+      fatale("error sending signal %d (%s) to self [%lu]", shutting_down,
+             strsignal(shutting_down), (unsigned long)getpid());
     sigemptyset(&ss);
     sigaddset(&ss, shutting_down);
     sigprocmask_e(SIG_UNBLOCK, &ss, 0);
     fatal("unexpectedly failed to terminate on signal %d to self",
-	  shutting_down);
+          shutting_down);
   }
 }
 
 static void shutdown_handler(int sig) {
   struct daemon *d;
   int s;
-  
+
   /* record which signal we actually caught */
   shutting_down = sig;
   debug("%s", strsignal(shutting_down));
@@ -329,14 +313,11 @@ static void shutdown_handler(int sig) {
   s = shutting_down == SIGINT ? SIGTERM : shutting_down;
   /* send the signal */
   for(d = daemons; d; d = d->next)
-    if(d->pid != (pid_t)-1
-       && !d->shutting_down) {
-      debug("sending signal %d to %lu",
-	    s, (unsigned long)d->pid);
+    if(d->pid != (pid_t)-1 && !d->shutting_down) {
+      debug("sending signal %d to %lu", s, (unsigned long)d->pid);
       if(kill(d->pid, s) < 0)
-	errore("error sending signal %d (%s) to %s[%lu]",
-	       s, strsignal(s),
-	       d->path, (unsigned long)d->pid);
+        errore("error sending signal %d (%s) to %s[%lu]", s, strsignal(s),
+               d->path, (unsigned long)d->pid);
     }
   /* turn off periodic rescans */
   alarm(0);
@@ -349,36 +330,22 @@ int main(int argc, char **argv) {
 
   setprogname(argv[0]);
 
-  while((n = getopt_long(argc, argv, 
-			 "hVr:e:ds",
-			 long_options, (int *)0)) >= 0) {
+  while((n = getopt_long(argc, argv, "hVr:e:ds", long_options, (int *)0))
+        >= 0) {
     switch(n) {
-    case 'V':
-      printf("run-repeatedly %s\n", VERSION);
-      return 0;
+    case 'V': printf("run-repeatedly %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
-      return 0;
+    case 'h': usage(stdout, 0); return 0;
 
-    case 'r':
-      rescan_interval = atoi(optarg);
-      break;
+    case 'r': rescan_interval = atoi(optarg); break;
 
-    case 'e':
-      execute_interval = atoi(optarg);
-      break;
+    case 'e': execute_interval = atoi(optarg); break;
 
-    case 'd':
-      ++debugging;
-      break;
+    case 'd': ++debugging; break;
 
-    case 's':
-      shutdown_obsolete = 1;
-      break;
-      
-    default:
-      usage(stderr, 1);
+    case 's': shutdown_obsolete = 1; break;
+
+    default: usage(stderr, 1);
     }
   }
 
@@ -396,7 +363,7 @@ int main(int argc, char **argv) {
   handle_signal(SIGTERM, shutdown_handler);
   handle_signal(SIGINT, shutdown_handler);
   handle_signal(SIGHUP, shutdown_handler);
-  
+
   /* perform initial scan */
   if(rescan())
     exit(-1);
@@ -409,7 +376,6 @@ int main(int argc, char **argv) {
 
   /* enter event loop */
   signal_loop();
-  
 }
 
 /*

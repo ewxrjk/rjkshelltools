@@ -1,4 +1,4 @@
-/* 
+/*
    accept-socket - accept connections on a socket and run a command
    for each
 
@@ -43,31 +43,26 @@
 #include "utils.h"
 
 /* Option flags and variables */
-static struct option const long_options[] =
-{
-  { "verbose", no_argument, 0, 'v' },
-  { "numeric", no_argument, 0, 'n' },
-  { "no-close", no_argument, 0, 'c' },
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"verbose", no_argument, 0, 'v'},  {"numeric", no_argument, 0, 'n'},
+    {"no-close", no_argument, 0, 'c'}, {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},  {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  accept-socket [options] [--] lfd cfd [--] command ...\n"
-"\n"
-"Options:\n"
-"  -v, --verbose                 Verbose mode\n"
-"  -c, --no-close                Don't close listening socket\n"
-"  -n, --numeric                 Don't resolve hostnames\n"
-"  -h, --help                    Usage message\n"
-"  -V, --version                 Version number\n"
-"\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  accept-socket [options] [--] lfd cfd [--] command ...\n"
+           "\n"
+           "Options:\n"
+           "  -v, --verbose                 Verbose mode\n"
+           "  -c, --no-close                Don't close listening socket\n"
+           "  -n, --numeric                 Don't resolve hostnames\n"
+           "  -h, --help                    Usage message\n"
+           "  -V, --version                 Version number\n"
+           "\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -84,7 +79,7 @@ static void sigchld_handler(int __attribute__((unused)) sig) {
 static void collect_zombies(int verbose) {
   pid_t pid;
   int status;
-  
+
   while((pid = waitpid(-1, &status, WNOHANG)) > 0) {
     if(verbose)
       error("[%lu] %s", (unsigned long)pid, wstat(status));
@@ -104,34 +99,22 @@ int main(int argc, char **argv) {
   int rdns = 1;
   sigset_t chmask;
   struct sigaction sa;
-  
+
   setprogname(argv[0]);
-  
-  while((n = getopt_long(argc, argv, 
-			 "hVnvc",
-			 long_options, (int *)0)) >= 0) {
+
+  while((n = getopt_long(argc, argv, "hVnvc", long_options, (int *)0)) >= 0) {
     switch(n) {
-    case 'V':
-      printf("accept-socket %s\n", VERSION);
-      return 0;
+    case 'V': printf("accept-socket %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
+    case 'h': usage(stdout, 0);
 
-    case 'c':
-      closeit = 0;
-      break;
+    case 'c': closeit = 0; break;
 
-    case 'v':
-      verbose++;
-      break;
+    case 'v': verbose++; break;
 
-    case 'n':
-      rdns = 0;
-      break;
-      
-    default:
-      usage(stderr, 1);
+    case 'n': rdns = 0; break;
+
+    default: usage(stderr, 1);
     }
   }
 
@@ -147,7 +130,7 @@ int main(int argc, char **argv) {
   /* skip -- if present */
   if(optind < argc && !strcmp(argv[optind], "--"))
     ++optind;
-  
+
   if(optind >= argc)
     fatal("no command specified");
 
@@ -161,7 +144,7 @@ int main(int argc, char **argv) {
   sa.sa_flags = 0;
   sigemptyset(&sa.sa_mask);
   sigaction_e(SIGCHLD, &sa, 0);
-  
+
   for(;;) {
     socklen_t len = sizeof u;
     int fd, rc;
@@ -171,7 +154,7 @@ int main(int argc, char **argv) {
     char buffer[1];
 
     sigprocmask_e(SIG_UNBLOCK, &chmask, 0);
-    
+
     FD_ZERO(&fds);
     FD_SET(lfd, &fds);
     tv.tv_sec = 1;
@@ -186,13 +169,13 @@ int main(int argc, char **argv) {
       collect_zombies(verbose);
       sigchld = 0;
     }
-    
+
     if(n == 0)
       continue;
     fd = accept(lfd, &u.sa, &len);
     if(fd < 0) {
-	if(verbose && errno != EINTR && errno != EAGAIN)
-	errore("error calling accept");
+      if(verbose && errno != EINTR && errno != EAGAIN)
+        errore("error calling accept");
       continue;
     }
     /* we use a pipe to detect when the child exits or executes.  This
@@ -200,11 +183,8 @@ int main(int argc, char **argv) {
      * get interleaved with messages from the parent. */
     pipe_e(p);
     switch(fork()) {
-    case -1:
-      errore("error calling fork");
-      break;
-    default:
-      break;
+    case -1: errore("error calling fork"); break;
+    default: break;
     case 0:
       exiter = _exit;
       /* if the writer end of the pipe clashes with CFD, dup it out of
@@ -212,21 +192,21 @@ int main(int argc, char **argv) {
        * behind will not be made FD_CLOEXEC, but instead be smashed
        * when CFD is dup'd into place. */
       if(p[1] == cfd)
-	p[1] = dup_e(cfd);
+        p[1] = dup_e(cfd);
       cloexec(p[1]);
       close_e(p[0]);
       /* in verbose mode, report the origin of the connection */
       if(verbose)
-	error("[%lu] %s",
-	      (unsigned long)getpid(), socketprint(&u.sa, len, rdns));
+        error("[%lu] %s", (unsigned long)getpid(),
+              socketprint(&u.sa, len, rdns));
       if(closeit)
-	close_e(lfd);
+        close_e(lfd);
       if(fd != cfd) {
-	dup2_e(fd, cfd);
-	close_e(fd);
+        dup2_e(fd, cfd);
+        close_e(fd);
       }
       if(execvp(argv[optind], argv + optind) < 0)
-	fatale("error executing %s", argv[optind]);
+        fatale("error executing %s", argv[optind]);
       fatal("execvp %s unexpectedly returned", argv[optind]);
     }
     close_e(p[1]);
@@ -244,7 +224,6 @@ int main(int argc, char **argv) {
     collect_zombies(verbose);
   }
 }
-
 
 /*
 Local Variables:

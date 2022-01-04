@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.
    Copyright (C) 2001, 2014, 2015 Richard Kettlewell
 
@@ -38,19 +38,20 @@
 #include "utils.h"
 #include "logdaemon.h"
 
-#define SUSPEND_PERIOD 60		/* how long to suspend inputs for */
-#define SELECT_RESOLUTION 10		/* upper limit to select
-					 * timeout if there are
-					 * suspended inputs */
+#define SUSPEND_PERIOD 60 /* how long to suspend inputs for */
+#define SELECT_RESOLUTION                                                      \
+  10 /* upper limit to select                                                  \
+      * timeout if there are                                                   \
+      * suspended inputs */
 
-struct logfile *ld_logfiles;		/* linked list of logfiles */
-struct syslogfile *ld_syslogfiles;	/* linked list of syslogfiles */
-struct input *ld_inputs;		/* linked list of inputs */
-long ld_day = 86400;			/* seconds between rotations */
+struct logfile *ld_logfiles;       /* linked list of logfiles */
+struct syslogfile *ld_syslogfiles; /* linked list of syslogfiles */
+struct input *ld_inputs;           /* linked list of inputs */
+long ld_day = 86400;               /* seconds between rotations */
 
-static fd_set fds;			/* input FD set for select */
-static int maxinput = -1;		/* max selectable FD */
-static int suspended;			/* number of suspended inputs */
+static fd_set fds;        /* input FD set for select */
+static int maxinput = -1; /* max selectable FD */
+static int suspended;     /* number of suspended inputs */
 
 /* block all signals, save the old signal mask via SS */
 
@@ -104,9 +105,7 @@ void ld_delete_logfile(struct logfile *l) {
 
   block(&ss);
   if(!--l->refs) {
-    for(ll = &ld_logfiles;
-	*ll && *ll != l;
-	ll = &(*ll)->next)
+    for(ll = &ld_logfiles; *ll && *ll != l; ll = &(*ll)->next)
       ;
     if(*ll)
       *ll = l->next;
@@ -165,9 +164,7 @@ void ld_delete_syslogfile(struct syslogfile *l) {
   sigset_t ss;
 
   block(&ss);
-  for(ll = &ld_syslogfiles;
-      *ll && *ll != l;
-      ll = &(*ll)->next)
+  for(ll = &ld_syslogfiles; *ll && *ll != l; ll = &(*ll)->next)
     ;
   if(*ll)
     *ll = l->next;
@@ -201,9 +198,7 @@ void ld_delete_input(struct input *i) {
   sigset_t ss;
 
   block(&ss);
-  for(ii = &ld_inputs;
-      *ii && *ii != i;
-      ii = &(*ii)->next)
+  for(ii = &ld_inputs; *ii && *ii != i; ii = &(*ii)->next)
     ;
   if(*ii)
     *ii = i->next;
@@ -221,7 +216,7 @@ void ld_delete_input(struct input *i) {
 void ld_suspend_input(struct input *i) {
   if(!i->suspended.tv_sec) {
     sigset_t ss;
-    
+
     block(&ss);
     FD_CLR(i->fd, &fds);
     gettimeofday(&i->suspended, NULL);
@@ -255,7 +250,7 @@ int ld_open_logfile(struct logfile *l, struct timeval now) {
   char *newpath = 0;
   size_t size = 1024;
   struct tm *t;
-  
+
   /* work out the filename we'll write to */
   t = (l->usegmt ? gmtime : localtime)(&now.tv_sec);
   /* keep expanding the buffer for the path until it's big enough */
@@ -276,26 +271,26 @@ int ld_open_logfile(struct logfile *l, struct timeval now) {
    * is no file, open the newly chosen name. */
   if(!l->path) {
     /* try to open the file */
-    if((l->fd = open(newpath, O_WRONLY|O_CREAT|O_APPEND, 0666)) < 0) {
+    if((l->fd = open(newpath, O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
       if(l->fd == -1 && errno == ENOENT) {
-	char *ptr;
-	/* this probably means the directory is missing, we attempt to
-	 * create it */
-	ptr = newpath;
-	while(*ptr) {
-	  if(*ptr == '/' && ptr != newpath) {
-	    *ptr = 0;
-	    mkdir(newpath, 0777);
-	    *ptr = '/';
-	  }
-	  ++ptr;
-	}
-	/* try again after (possibly...) creating directories */
-	if((l->fd = open(newpath, O_WRONLY|O_CREAT|O_APPEND, 0666)) < 0) {
-	  errore("error opening %s", newpath);
-	  free(newpath);
-	  return -1;
-	}
+        char *ptr;
+        /* this probably means the directory is missing, we attempt to
+         * create it */
+        ptr = newpath;
+        while(*ptr) {
+          if(*ptr == '/' && ptr != newpath) {
+            *ptr = 0;
+            mkdir(newpath, 0777);
+            *ptr = '/';
+          }
+          ++ptr;
+        }
+        /* try again after (possibly...) creating directories */
+        if((l->fd = open(newpath, O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
+          errore("error opening %s", newpath);
+          free(newpath);
+          return -1;
+        }
       }
     }
     /* record what path we've opened */
@@ -368,20 +363,20 @@ int ld_loop(void) {
     /* unsuspend inputs */
     if(suspended) {
       for(i = ld_inputs; i; i = i->next) {
-	if(i->suspended.tv_sec && tvcmp(&i->suspended, &now) <= 0) {
-	  ld_resume_input(i);
-	  if(!suspended)
-	    break;
-	}
+        if(i->suspended.tv_sec && tvcmp(&i->suspended, &now) <= 0) {
+          ld_resume_input(i);
+          if(!suspended)
+            break;
+        }
       }
     }
     if(maxinput == -1) {
       /* recalculate maximum FD */
       for(i = ld_inputs; i; i = i->next)
-	if(i->fd > maxinput)
-	  maxinput = i->fd;
+        if(i->fd > maxinput)
+          maxinput = i->fd;
     }
-    
+
     /* copy file descriptor set */
     rfds = fds;
     /* work out timeout */
@@ -397,23 +392,22 @@ int ld_loop(void) {
     n = select(maxinput + 1, &rfds, 0, 0, &tv);
     if(n < 0) {
       if(errno == EINTR)
-	continue;
+        continue;
       errore("select");
-      return -1;			/* fatal error from select */
+      return -1; /* fatal error from select */
     }
     if(n) {
       block(&ss);
       /* see which inputs tripped */
       i = ld_inputs;
       while(i) {
-	struct input *inext = i->next;
-	if(i->fd != -1
-	   && FD_ISSET(i->fd, &rfds)) {
-	  (*i->input_callback)(i, now);
-	  if(--n == 0)
-	    break;
-	}
-	i = inext;
+        struct input *inext = i->next;
+        if(i->fd != -1 && FD_ISSET(i->fd, &rfds)) {
+          (*i->input_callback)(i, now);
+          if(--n == 0)
+            break;
+        }
+        i = inext;
       }
       unblock(&ss);
     }
@@ -444,7 +438,7 @@ void ld_input_callback(struct input *i, struct timeval now) {
      * data */
   }
   /* free up the buffer if it has emptied */
-  if(l->buffer && ! l->bufsize) {
+  if(l->buffer && !l->bufsize) {
     free(l->buffer);
     l->buffer = 0;
   }
@@ -476,7 +470,7 @@ void ld_input_callback(struct input *i, struct timeval now) {
 
     if(n < 0) {
       if(errno == EINTR)
-	continue;
+        continue;
       errore("error writing to %s", l->path);
       break;
     }
@@ -494,15 +488,16 @@ void ld_input_callback(struct input *i, struct timeval now) {
   }
 }
 
-void ld_syslog_callback(struct input *i, struct timeval __attribute__((unused)) now) {
+void ld_syslog_callback(struct input *i,
+                        struct timeval __attribute__((unused)) now) {
   struct syslogfile *l = i->log;
   int bytes;
   char *nl;
 
   /* make sure there's some space in the buffer */
   if(l->bytes >= l->bufsize)
-    l->buffer = xrealloc(l->buffer,
-			 l->bufsize = l->bufsize ? 2 * l->bufsize : 128);
+    l->buffer =
+        xrealloc(l->buffer, l->bufsize = l->bufsize ? 2 * l->bufsize : 128);
   bytes = read(i->fd, l->buffer, l->bufsize);
   if(bytes < 0) {
     /* we check EAGAIN, as sometimes we are called speculatively
@@ -549,8 +544,7 @@ void ld_daily_callback(struct input *i, struct timeval now) {
     /* get a list of all files */
     switch(glob(pattern, GLOB_NOSORT, 0, &g)) {
     case 0:
-    case GLOB_NOMATCH:
-      break;
+    case GLOB_NOMATCH: break;
     case GLOB_NOSPACE: goto nospace;
     case GLOB_ABORTED: goto readerror;
     }
@@ -558,16 +552,11 @@ void ld_daily_callback(struct input *i, struct timeval now) {
       /* include compressed files */
       char *cpattern = xstrdupcat(pattern, ".gz");
 
-      switch(glob(cpattern, GLOB_NOSORT|GLOB_APPEND, 0, &g)) {
+      switch(glob(cpattern, GLOB_NOSORT | GLOB_APPEND, 0, &g)) {
       case 0:
-      case GLOB_NOMATCH:
-	break;
-      case GLOB_NOSPACE:
-	free(cpattern);
-	goto nospace;
-      case GLOB_ABORTED:
-	free(cpattern);
-	goto readerror;
+      case GLOB_NOMATCH: break;
+      case GLOB_NOSPACE: free(cpattern); goto nospace;
+      case GLOB_ABORTED: free(cpattern); goto readerror;
       }
       free(cpattern);
     }
@@ -577,64 +566,61 @@ void ld_daily_callback(struct input *i, struct timeval now) {
       char *path = g.gl_pathv[n];
 
       if(lstat(path, &sb) < 0)
-	continue;
+        continue;
       /* only care about regular files */
-      if(S_ISREG(sb.st_mode)
-	 && sb.st_mtime < now.tv_sec - l->rotate * ld_day) {
-	int m;
-	
-	if(unlink(path) < 0)
-	  errore("removing %s", path);
-	/* We want to unlink containing directories, but rmdir'ing all
-	 * the way down to the root seems like a bad idea.  There are
-	 * a number of safeguards for this:
-	 *
-	 * Firstly we don't remove any subdirectory that exactly
-	 * matches the prefix of the pattern.  So if the original
-	 * pattern was /var/log/%Y/%m/%d/foo.log then we will remove
-	 * everything below /var/log, but not /var/log itself (even if
-	 * we have permission).
-	 *
-	 * Secondly we only remove genuine directories - once we hit a
-	 * symlink, we stop dead.  If the user introduces symlinks in
-	 * the the middle of the path, it is up to them to clear up
-	 * the results.
-	 *
-	 * Thirdly we only remove directories that have the same
-	 * permissions as they would get if we re-created them.
-	 */
-	m = strlen(path);
-	while(m > 0) {
-	  if(path[m] == '/') {
-	    path[m] = 0;
-	    /* lexical checks */
-	    if(!strncmp(path, pattern, m))
-	      break;
-	    /* make sure we know what mode we create files with */
-	    if(default_mode == (mode_t)-1) {
-	      mode_t u;
-	      sigset_t ss;
+      if(S_ISREG(sb.st_mode) && sb.st_mtime < now.tv_sec - l->rotate * ld_day) {
+        int m;
 
-	      block(&ss);
-	      /* can't get the umask without changing it, argh */
-	      u = umask(0777);
-	      umask(u);
-	      unblock(&ss);
-	      default_mode = 0777 ^ u;
-	    }
-	    /* checks based on the file system */
-	    if(lstat(path, &sb) < 0
-	       || !S_ISDIR(sb.st_mode)
-	       || (sb.st_mode & 0777) != default_mode
-	       || sb.st_uid != geteuid()
-	       || sb.st_gid != getegid())
-	      break;
-	    /* attempt the removal */
-	    if(rmdir(path) < 0)
-	      break;
-	  }
-	  --m;
-	}
+        if(unlink(path) < 0)
+          errore("removing %s", path);
+        /* We want to unlink containing directories, but rmdir'ing all
+         * the way down to the root seems like a bad idea.  There are
+         * a number of safeguards for this:
+         *
+         * Firstly we don't remove any subdirectory that exactly
+         * matches the prefix of the pattern.  So if the original
+         * pattern was /var/log/%Y/%m/%d/foo.log then we will remove
+         * everything below /var/log, but not /var/log itself (even if
+         * we have permission).
+         *
+         * Secondly we only remove genuine directories - once we hit a
+         * symlink, we stop dead.  If the user introduces symlinks in
+         * the the middle of the path, it is up to them to clear up
+         * the results.
+         *
+         * Thirdly we only remove directories that have the same
+         * permissions as they would get if we re-created them.
+         */
+        m = strlen(path);
+        while(m > 0) {
+          if(path[m] == '/') {
+            path[m] = 0;
+            /* lexical checks */
+            if(!strncmp(path, pattern, m))
+              break;
+            /* make sure we know what mode we create files with */
+            if(default_mode == (mode_t)-1) {
+              mode_t u;
+              sigset_t ss;
+
+              block(&ss);
+              /* can't get the umask without changing it, argh */
+              u = umask(0777);
+              umask(u);
+              unblock(&ss);
+              default_mode = 0777 ^ u;
+            }
+            /* checks based on the file system */
+            if(lstat(path, &sb) < 0 || !S_ISDIR(sb.st_mode)
+               || (sb.st_mode & 0777) != default_mode || sb.st_uid != geteuid()
+               || sb.st_gid != getegid())
+              break;
+            /* attempt the removal */
+            if(rmdir(path) < 0)
+              break;
+          }
+          --m;
+        }
       }
     }
     globfree(&g);
@@ -643,8 +629,7 @@ void ld_daily_callback(struct input *i, struct timeval now) {
     /* get a list of all uncompressed files */
     switch(glob(pattern, GLOB_NOSORT, 0, &g)) {
     case 0:
-    case GLOB_NOMATCH:
-      break;
+    case GLOB_NOMATCH: break;
     case GLOB_NOSPACE: goto nospace;
     case GLOB_ABORTED: goto readerror;
     }
@@ -655,35 +640,29 @@ void ld_daily_callback(struct input *i, struct timeval now) {
 
       /* skip already-compressed files */
       if(l >= 3 && !strcmp(path + l - 3, ".gz"))
-	continue;
+        continue;
       if(lstat(path, &sb) < 0)
-	continue;
+        continue;
       /* only care about regular files more than a day old,
        * i.e. better not comress a file we might re-open soon */
-      if(S_ISREG(sb.st_mode)
-	 && sb.st_mtime < now.tv_sec - ld_day) {
-	pid_t pid, r;
-	int status;
+      if(S_ISREG(sb.st_mode) && sb.st_mtime < now.tv_sec - ld_day) {
+        pid_t pid, r;
+        int status;
 
-	/* try to compress the file */
-	switch(pid = fork()) {
-	case 0:
-	  /* XXX should support more than just gzip */
-	  execlp("gzip", "gzip", "-9f", path, (char *)0);
-	  _exit(-1);
-	case -1:
-	  errore("fork");
-	  break;
-	default:
-	  do {
-	    r = waitpid(pid, &status, 0);
-	  } while(r == -1 && errno == EINTR);
-	  if(r == -1)
-	    errore("error waiting for gzip");
-	  else if(status)
-	    error("wait status from gzip -9f %s: %#x",
-		  path, (unsigned)status);
-	}
+        /* try to compress the file */
+        switch(pid = fork()) {
+        case 0:
+          /* XXX should support more than just gzip */
+          execlp("gzip", "gzip", "-9f", path, (char *)0);
+          _exit(-1);
+        case -1: errore("fork"); break;
+        default: do { r = waitpid(pid, &status, 0);
+          } while(r == -1 && errno == EINTR);
+          if(r == -1)
+            errore("error waiting for gzip");
+          else if(status)
+            error("wait status from gzip -9f %s: %#x", path, (unsigned)status);
+        }
       }
     }
     globfree(&g);
@@ -714,46 +693,48 @@ char *ld_globtime(const char *pattern) {
     case '?':
     case '*':
       if(n >= size)
-	s = xrealloc(s, size = size ? size * 2 : 128);
+        s = xrealloc(s, size = size ? size * 2 : 128);
       s[n++] = '\\';
       break;
     case '%':
       c = *pattern++;
       switch(c) {
-      case '%':				/* literal % */
-	break;
-      case 't':				/* tab */
-	c = '\t';
-	break;
-      case 'n':				/* newline */
-	c = '\n';
-	break;
-      case 'a': case 'A':		/* weekday names */
-      case 'b': case 'B': case 'h':	/* month names */
-      case 'C':				/* century */
-      case 'd':				/* day of month */
-      case 'e':				/* day of month */
-      case 'g': case 'G':		/* year */
-      case 'H': case 'I':		/* hour */
-      case 'k': case 'l':		/* hour */
-      case 'j':				/* day of year */
-      case 'm':				/* month */
-      case 'M':				/* minute */
-      case 'p': case 'P':		/* am/pm */
-      case 'r':				/* time + am/pm */
-      case 'R':				/* time */
-      case 's':				/* time_t */
-      case 'S':				/* second */
-      case 'T':				/* time */
-      case 'u': case 'w':		/* day of week */
-      case 'U': case 'V': case 'W':	/* week number */
-      case 'y': case 'Y':		/* year */
-      case 'Z':				/* timezone */
-	c = '*';
-	break;
-      default:
-	free(s);
-	return 0;
+      case '%': /* literal % */ break;
+      case 't': /* tab */ c = '\t'; break;
+      case 'n': /* newline */ c = '\n'; break;
+      case 'a':
+      case 'A': /* weekday names */
+      case 'b':
+      case 'B':
+      case 'h': /* month names */
+      case 'C': /* century */
+      case 'd': /* day of month */
+      case 'e': /* day of month */
+      case 'g':
+      case 'G': /* year */
+      case 'H':
+      case 'I': /* hour */
+      case 'k':
+      case 'l': /* hour */
+      case 'j': /* day of year */
+      case 'm': /* month */
+      case 'M': /* minute */
+      case 'p':
+      case 'P': /* am/pm */
+      case 'r': /* time + am/pm */
+      case 'R': /* time */
+      case 's': /* time_t */
+      case 'S': /* second */
+      case 'T': /* time */
+      case 'u':
+      case 'w': /* day of week */
+      case 'U':
+      case 'V':
+      case 'W': /* week number */
+      case 'y':
+      case 'Y': /* year */
+      case 'Z': /* timezone */ c = '*'; break;
+      default: free(s); return 0;
       }
       break;
     }

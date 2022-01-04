@@ -20,8 +20,8 @@
 
 #include "utils.h"
 
-void sigaction_e(int signo,
-		 const struct sigaction *new, struct sigaction *old) {
+void sigaction_e(int signo, const struct sigaction *new,
+                 struct sigaction *old) {
   if(sigaction(signo, new, old) < 0)
     fatale("error calling sigaction");
 }

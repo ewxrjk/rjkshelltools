@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -29,34 +29,23 @@
 
 /* lookup tables for socket types and families */
 static const struct lookuptable families[] = {
-  { "inet", AF_INET },
-  { "unix", AF_UNIX },
-  { 0, 0 }
-};
+    {"inet", AF_INET}, {"unix", AF_UNIX}, {0, 0}};
 
 static const struct lookuptable types[] = {
-  { "stream", SOCK_STREAM },
-  { "dgram", SOCK_DGRAM },
-  { 0, 0 }
-};
+    {"stream", SOCK_STREAM}, {"dgram", SOCK_DGRAM}, {0, 0}};
 
-void parse_socket_arg(int *argp,
-		      int argc, char **argv,
-		      struct sockaddr *addrp,
-		      int *lenp,
-		      int *pfp, int *typep, int *protop) {
+void parse_socket_arg(int *argp, int argc, char **argv, struct sockaddr *addrp,
+                      int *lenp, int *pfp, int *typep, int *protop) {
   int af, type;
 
   memset(addrp, 0, *lenp);
-  
-  if(*argp < argc
-     && (af = lookup(families, argv[*argp])) != -1)
+
+  if(*argp < argc && (af = lookup(families, argv[*argp])) != -1)
     ++*argp;
   else
     af = AF_INET;
 
-  if(*argp < argc
-     && (type = lookup(types, argv[*argp])) != -1)
+  if(*argp < argc && (type = lookup(types, argv[*argp])) != -1)
     ++*argp;
   else
     type = SOCK_STREAM;
@@ -65,12 +54,12 @@ void parse_socket_arg(int *argp,
   case AF_INET:
     if(*argp >= argc)
       fatal("no address specified for inet socket");
-    if((size_t)*lenp < sizeof (struct sockaddr_in))
+    if((size_t)*lenp < sizeof(struct sockaddr_in))
       fatal("address buffer for parse_socket_arg too small");
-    inetaddress((struct sockaddr_in *)addrp,
-		argv[*argp], type == SOCK_STREAM ? "tcp" : "udp");
+    inetaddress((struct sockaddr_in *)addrp, argv[*argp],
+                type == SOCK_STREAM ? "tcp" : "udp");
     /* report back the length */
-    *lenp = sizeof (struct sockaddr_in);
+    *lenp = sizeof(struct sockaddr_in);
     ++*argp;
     *pfp = PF_INET;
     break;
@@ -78,34 +67,32 @@ void parse_socket_arg(int *argp,
     struct sockaddr_un *su = (struct sockaddr_un *)addrp;
     int l = offsetof(struct sockaddr_un, sun_path) + strlen(argv[*argp]) + 1;
 
-#if ! HAVE_LONG_AF_UNIX_SOCKETS
-    if(l > (int)sizeof (struct sockaddr_un))
+#if !HAVE_LONG_AF_UNIX_SOCKETS
+    if(l > (int)sizeof(struct sockaddr_un))
       fatal("path \"%s\" is too long for a UNIX domain socket", argv[*argp]);
 #endif
-    
+
     if(*argp >= argc)
       fatal("no address specified for unix socket");
     /* check length */
     if(l > *lenp)
       fatal("path \"%s\" is too long for the socket address buffer",
-	    argv[*argp]);
+            argv[*argp]);
     /* make the address */
     su->sun_family = AF_UNIX;
-    strcpy(su->sun_path, argv[*argp]);	/* checked above */
+    strcpy(su->sun_path, argv[*argp]); /* checked above */
     /* report back the length */
     *lenp = l;
     ++*argp;
     *pfp = PF_UNIX;
     break;
   }
-    
-  default:
-    fatal("unknown address family %d", af);
+
+  default: fatal("unknown address family %d", af);
   }
-  
+
   *typep = type;
   *protop = 0;
-    
 }
 
 /*

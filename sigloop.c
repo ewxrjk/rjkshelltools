@@ -42,18 +42,18 @@ void init_signals(void) {
   if(!initialized) {
     int n;
     struct sigaction sa;
-    
+
     sigemptyset(&handled);
     for(n = 1; n <= NSIG; ++n)
       if(handlers[n])
-	sigaddset(&handled, n);
+        sigaddset(&handled, n);
     sigprocmask_e(SIG_BLOCK, &handled, &unblocked);
     sa.sa_handler = handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
     for(n = 1; n <= NSIG; ++n)
       if(handlers[n])
-	sigaction_e(n, &sa, &oldsa[n]);
+        sigaction_e(n, &sa, &oldsa[n]);
     initialized = 1;
   }
 }
@@ -61,10 +61,10 @@ void init_signals(void) {
 void restore_signals(void) {
   if(initialized) {
     int n;
-    
+
     for(n = 1; n <= NSIG; ++n)
       if(handlers[n])
-	sigaction(n, &oldsa[n], 0);
+        sigaction(n, &oldsa[n], 0);
     sigprocmask_e(SIG_SETMASK, &unblocked, 0);
     initialized = 0;
   }
@@ -78,8 +78,8 @@ void signal_loop(void) {
     sigsuspend(&unblocked);
     for(n = 1; n <= NSIG; ++n) {
       if(signals[n]) {
-	signals[n] = 0;
-	(*handlers[n])(n);
+        signals[n] = 0;
+        (*handlers[n])(n);
       }
     }
   }

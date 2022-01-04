@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -69,9 +69,9 @@ void setpriv(const char *user, const char *group, const char *root) {
   /* set the user IDs */
   if(setuid(uid) < 0)
     fatale("error calling setuid");
- 
+
   /* check it worked */
- if(getuid() != uid)
+  if(getuid() != uid)
     fatal("real UID didn't change");
   if(geteuid() != uid)
     fatal("effective UID didn't change");

@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshelltools, Copyright (C) 2001 Richard Kettlewell.
 
    This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 */
 
 #if HAVE_SYS_UIO_H
-# include <sys/uio.h>
+#include <sys/uio.h>
 #else
 struct iovec {
   void *iov_base;
@@ -29,11 +29,11 @@ ssize_t writev(int fd, const struct iovec *vector, int count);
 #endif
 
 #ifndef IOV_MAX
-# ifdef UIO_MAXIOV
-#  define IOV_MAX UIO_MAXIOV
-# else
-#  define IOV_MAX 16
-# endif
+#ifdef UIO_MAXIOV
+#define IOV_MAX UIO_MAXIOV
+#else
+#define IOV_MAX 16
+#endif
 #endif
 
 /*

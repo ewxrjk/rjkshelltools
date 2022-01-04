@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@ int maxfd(void) {
     fatale("error calling sysconf");
   return n;
 #else
-  return 1023;			/* XXX guess! */
+  return 1023; /* XXX guess! */
 #endif
 }
 

@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -42,9 +42,9 @@ void makedirs(const char *path, mode_t mode) {
     if(*q == '/') {
       *q = 0;
       if(mkdir(p, cmode) == 0)
-	if(mode != (mode_t)-1)
-	  if(chmod(p, mode) < 0)
-	    fatale("error calling chmod \"%s\"", p);
+        if(mode != (mode_t)-1)
+          if(chmod(p, mode) < 0)
+            fatale("error calling chmod \"%s\"", p);
       *q = '/';
     }
     ++q;
@@ -53,7 +53,7 @@ void makedirs(const char *path, mode_t mode) {
   if(mkdir(p, cmode) == 0)
     if(mode != (mode_t)-1)
       if(chmod(p, mode) < 0)
-	fatale("error calling chmod \"%s\"", p);
+        fatale("error calling chmod \"%s\"", p);
   free(p);
 }
 

@@ -34,50 +34,49 @@
 #include "uio.h"
 #include "utils.h"
 
-static char *buffer;			/* base of buffer */
-static size_t offset;			/* offset of start of text */
-static size_t total_bytes;		/* total bytes in buffer */
+static char *buffer;       /* base of buffer */
+static size_t offset;      /* offset of start of text */
+static size_t total_bytes; /* total bytes in buffer */
 
-static size_t readmin = 32768;		/* minimum read */
-static size_t writemin = 32768;		/* minimum write */
-static size_t buffer_size = 1048576;	/* maximum data to hold in memory */
+static size_t readmin = 32768;       /* minimum read */
+static size_t writemin = 32768;      /* minimum write */
+static size_t buffer_size = 1048576; /* maximum data to hold in memory */
 
-static int seen_eof;			/* true if we've seen read eof */
+static int seen_eof; /* true if we've seen read eof */
 
-static int stdinflags, stdoutflags;	/* saved F_GETFL flags */
+static int stdinflags, stdoutflags; /* saved F_GETFL flags */
 
 /* Option flags and variables */
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "read-min", required_argument, 0, 'r' },
-  { "write-min", required_argument, 0, 'w' },
-  { "buffer", required_argument, 0, 'b' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {"read-min", required_argument, 0, 'r'},
+    {"write-min", required_argument, 0, 'w'},
+    {"buffer", required_argument, 0, 'b'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
   if(fputs(
-"Usage:\n"
-"  iobuffer [options]\n"
-"\n"
-"Options:\n"
-"  -r N, --read-min N                Read at least N bytes per call\n"
-"  -w N, --write-min N               Write at least N bytes per call\n"
-"  -b N, --buffer N                  Specify buffer size\n"
-"  -h, --help                        Usage message\n"
-"  -V, --version                     Version number\n"
-, fp) < 0)
+         "Usage:\n"
+         "  iobuffer [options]\n"
+         "\n"
+         "Options:\n"
+         "  -r N, --read-min N                Read at least N bytes per call\n"
+         "  -w N, --write-min N               Write at least N bytes per call\n"
+         "  -b N, --buffer N                  Specify buffer size\n"
+         "  -h, --help                        Usage message\n"
+         "  -V, --version                     Version number\n",
+         fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
 
 /* fix up stdin/stdout flags */
 static void restore_flags(void) {
-  exiter = _exit;			/* don't recursively call exit() */
+  exiter = _exit; /* don't recursively call exit() */
   fcntl_e(0, F_SETFL, stdinflags);
   fcntl_e(1, F_SETFL, stdoutflags);
 }
@@ -123,7 +122,7 @@ static void do_read(void) {
   int n;
   size_t firstgap;
   int bytes_read;
-  
+
   if(!want_to_read())
     return;
   n = 0;
@@ -140,19 +139,19 @@ static void do_read(void) {
       /* text wraps (or goes up to the end of the buffer); there is
        * only one gap to read into. */
       vector[n].iov_base = buffer + firstgap;
-      vector[n].iov_len = offset - firstgap; 
+      vector[n].iov_len = offset - firstgap;
       ++n;
-   } else {
+    } else {
       /* there's a gap at the top of the buffer (and maybe one at the
        * bottom too) */
       vector[n].iov_base = buffer + firstgap;
       vector[n].iov_len = buffer_size - firstgap;
       ++n;
       if(offset > 0) {
-	/* there's a gap at the bottom of the buffer */
-	vector[n].iov_base = buffer;
-	vector[n].iov_len = offset;
-	++n;
+        /* there's a gap at the bottom of the buffer */
+        vector[n].iov_base = buffer;
+        vector[n].iov_len = offset;
+        ++n;
       }
     }
   }
@@ -164,10 +163,8 @@ static void do_read(void) {
   else
     switch(errno) {
     case EINTR:
-    case EAGAIN:
-      break;
-    default:
-      fatale("error calling readv");
+    case EAGAIN: break;
+    default: fatale("error calling readv");
     }
 }
 
@@ -210,50 +207,43 @@ static void do_write(void) {
   else
     switch(errno) {
     case EINTR:
-    case EAGAIN:
-      break;
-    default:
-      fatale("error calling writev");
+    case EAGAIN: break;
+    default: fatale("error calling writev");
     }
 }
- 
+
 int main(int argc, char **argv) {
   int n;
   long value;
 
   setprogname(argv[0]);
 
-  while((n = getopt_long(argc, argv,
-			 "r:w:b:hV",
-			 long_options, (int *)0)) >= 0) {
+  while((n = getopt_long(argc, argv, "r:w:b:hV", long_options, (int *)0))
+        >= 0) {
     switch(n) {
-    case 'V':
-      printf("iobuffer %s\n", VERSION);
-      return 0;
+    case 'V': printf("iobuffer %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
+    case 'h': usage(stdout, 0);
 
     case 'r':
       if((value = atol(optarg)) <= 0)
-	fatal("--read-min value must be positive");
+        fatal("--read-min value must be positive");
       readmin = value;
       break;
 
     case 'w':
       if((value = atoi(optarg)) <= 0)
-	fatal("--write-min value must be positive");
+        fatal("--write-min value must be positive");
       writemin = value;
       break;
 
     case 'b':
       if((value = atoi(optarg)) <= 0)
-	fatal("--buffer value must be positive");
+        fatal("--buffer value must be positive");
       buffer_size = value;
       break;
 
-    default:
-      usage(stderr, 1);
+    default: usage(stderr, 1);
     }
   }
 
@@ -264,9 +254,9 @@ int main(int argc, char **argv) {
     fatal("--read-min must be smaller than --buffer");
   if(writemin > buffer_size)
     fatal("--write-min must be smaller than --buffer");
-  
+
   buffer = xmalloc(buffer_size);
-  
+
   stdinflags = fcntl_e(0, F_GETFL, 0);
   stdoutflags = fcntl(1, F_GETFL, 0);
   /* exit() should restore the file flags */
@@ -285,19 +275,19 @@ int main(int argc, char **argv) {
 
   nonblock(0);
   nonblock(1);
-  
+
   do {
     fd_set readable, writable;
 
     FD_ZERO(&readable);
     if(want_to_read())
       FD_SET(0, &readable);
-    FD_ZERO(&writable);      
+    FD_ZERO(&writable);
     if(want_to_write())
       FD_SET(1, &writable);
     if((n = select(2, &readable, &writable, 0, 0)) < 0) {
       if(errno == EINTR)
-	continue;
+        continue;
       fatale("error calling select");
     }
     if(FD_ISSET(0, &readable))

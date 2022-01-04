@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2003 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify

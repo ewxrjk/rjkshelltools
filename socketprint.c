@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -30,45 +30,42 @@
 
 #include "utils.h"
 
-const char *socketprint(const struct sockaddr *addr,
-			size_t len,
-			int rdns) {
+const char *socketprint(const struct sockaddr *addr, size_t len, int rdns) {
   static char buffer[1024];
   int n;
-  
+
   switch(addr->sa_family) {
   case AF_INET: {
     const struct sockaddr_in *in = (const struct sockaddr_in *)addr;
     struct hostent *he;
 
-    if(rdns && (he = gethostbyaddr((const char *)&in->sin_addr,
-				   sizeof in->sin_addr,
-				   AF_INET))) {
-      n = snprintf(buffer, sizeof buffer, "%s [%s]:%d",
-		   he->h_name, inet_ntoa(in->sin_addr), ntohs(in->sin_port));
+    if(rdns
+       && (he = gethostbyaddr((const char *)&in->sin_addr, sizeof in->sin_addr,
+                              AF_INET))) {
+      n = snprintf(buffer, sizeof buffer, "%s [%s]:%d", he->h_name,
+                   inet_ntoa(in->sin_addr), ntohs(in->sin_port));
     } else {
-      n = snprintf(buffer, sizeof buffer, "%s:%d",
-		   inet_ntoa(in->sin_addr), ntohs(in->sin_port));
+      n = snprintf(buffer, sizeof buffer, "%s:%d", inet_ntoa(in->sin_addr),
+                   ntohs(in->sin_port));
     }
     break;
   }
-    
+
   case AF_UNIX: {
     const struct sockaddr_un *un = (const struct sockaddr_un *)addr;
     int l;
 
-    if(!memchr(un->sun_path, 0,
-	       len - offsetof(struct sockaddr_un, sun_path)))
+    if(!memchr(un->sun_path, 0, len - offsetof(struct sockaddr_un, sun_path)))
       l = len - offsetof(struct sockaddr_un, sun_path);
     else
       l = strlen(un->sun_path);
     n = snprintf(buffer, sizeof buffer, "%.*s", l, un->sun_path);
     break;
   }
-    
+
   default:
     n = snprintf(buffer, sizeof buffer, "unknown address family %#lx",
-		 (unsigned long)addr->sa_family);
+                 (unsigned long)addr->sa_family);
     break;
   }
   if(n < 0)

@@ -1,4 +1,4 @@
-/* 
+/*
    with-lock - run a program with a lock held
 
    Copyright (C) 2001 Richard Kettlewell
@@ -34,46 +34,46 @@
 
 /* Option flags and variables */
 
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "fd", required_argument, 0, 'f' },
-  { "exclusive", no_argument, 0, 'e' },
-  { "shared", no_argument, 0, 's' },
-  { "no-fork", no_argument, 0, 'F' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {{"help", no_argument, 0, 'h'},
+                                             {"version", no_argument, 0, 'V'},
+                                             {"fd", required_argument, 0, 'f'},
+                                             {"exclusive", no_argument, 0, 'e'},
+                                             {"shared", no_argument, 0, 's'},
+                                             {"no-fork", no_argument, 0, 'F'},
+                                             {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fputs(
-"Usage:\n"
-"  with-lock [options] [--] path command ...\n"
-"\n"
-"Options:\n"
-"  -f N, --fd N                          File descriptor to use\n"
-"  -e, --exclusive                       Get an exclusive ('writer') lock\n"
-"                                        (default)\n"
-"  -s, --shared                          Get a shared ('reader') lock\n"
-"  -t SECONDS, --timeout SECONDS         Set a timeout\n"
-"  -F, --no-fork                         Execute command directly (not in a\n"
-"                                        subprocess)\n"
-"  -h, --help                            Usage message\n"
-"  -V, --version                         Version number\n"
-, fp) < 0)
+  if(fputs("Usage:\n"
+           "  with-lock [options] [--] path command ...\n"
+           "\n"
+           "Options:\n"
+           "  -f N, --fd N                          File descriptor to use\n"
+           "  -e, --exclusive                       Get an exclusive "
+           "('writer') lock\n"
+           "                                        (default)\n"
+           "  -s, --shared                          Get a shared ('reader') "
+           "lock\n"
+           "  -t SECONDS, --timeout SECONDS         Set a timeout\n"
+           "  -F, --no-fork                         Execute command directly "
+           "(not in a\n"
+           "                                        subprocess)\n"
+           "  -h, --help                            Usage message\n"
+           "  -V, --version                         Version number\n",
+           fp)
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
 
 static void __attribute__((noreturn))
-    alarm_handler(int __attribute__((unused)) sig) {
+alarm_handler(int __attribute__((unused)) sig) {
   static const char msg[] = "with-lock: timed out\n";
   int rc;
-  
+
   rc = write(2, msg, sizeof msg);
-  (void)rc;                             /* quieten compiler */
+  (void)rc; /* quieten compiler */
   _exit(1);
 }
 
@@ -91,21 +91,14 @@ int main(int argc, char **argv) {
   int w;
 
   setprogname(argv[0]);
-  while((n = getopt_long(argc, argv, 
-			 "hVf:est:F",
-			 long_options, (int *)0)) >= 0) {
+  while((n = getopt_long(argc, argv, "hVf:est:F", long_options, (int *)0))
+        >= 0) {
     switch(n) {
-    case 'V':
-      printf("with-lock %s\n", VERSION);
-      return 0;
+    case 'V': printf("with-lock %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
-      return 0;
+    case 'h': usage(stdout, 0); return 0;
 
-    case 'f':
-      desired_fd = atoi(optarg);
-      break;
+    case 'f': desired_fd = atoi(optarg); break;
 
     case 'e':
       type = F_WRLCK;
@@ -117,17 +110,12 @@ int main(int argc, char **argv) {
       flags = O_RDONLY;
       break;
 
-    case 't':
-      timeout = atoi(optarg);
-      break;
+    case 't': timeout = atoi(optarg); break;
 
-    case 'F':
-      forkme = 0;
-      break;
-      
-    default:
-      usage(stderr, 1);
-    }   
+    case 'F': forkme = 0; break;
+
+    default: usage(stderr, 1);
+    }
   }
 
   /* pick up the path */
@@ -141,7 +129,7 @@ int main(int argc, char **argv) {
 
   /* open the file.  FD_CLOEXEC had better not be the default
    * anywhere! */
-  fd = open_e(path, flags|O_CREAT, mode);
+  fd = open_e(path, flags | O_CREAT, mode);
 
   /* implement --fd option */
   if(desired_fd >= 0 && desired_fd != fd) {
@@ -181,30 +169,27 @@ int main(int argc, char **argv) {
       /* parent */
       waitpid_e(pid, &w, 0);
       if(WIFEXITED(w))
-	exit(w);
+        exit(w);
       if(WIFSIGNALED(w)) {
-	/* the alternative would be to propagate the signal back
-	 * through ourselves but that might (a) lie about whether
-	 * there had been a coredump and (b) overwrite the coredump.
-	 * (b) is fixable by setting a ulimit but I can't see how to
-	 * solve (a). */
-	fprintf(stderr, "%s: child terminated by signal %d (%s)%s\n",
-		program_name,
-		WTERMSIG(w),
-		strsignal(WTERMSIG(w)),
-		WCOREDUMP(w) ? " (core dumped)" : "");
-	_exit(WTERMSIG(w) + 128);
+        /* the alternative would be to propagate the signal back
+         * through ourselves but that might (a) lie about whether
+         * there had been a coredump and (b) overwrite the coredump.
+         * (b) is fixable by setting a ulimit but I can't see how to
+         * solve (a). */
+        fprintf(stderr, "%s: child terminated by signal %d (%s)%s\n",
+                program_name, WTERMSIG(w), strsignal(WTERMSIG(w)),
+                WCOREDUMP(w) ? " (core dumped)" : "");
+        _exit(WTERMSIG(w) + 128);
       }
       fatal("incomprehensible wait status %#x", (unsigned)w);
     }
     /* child */
     exiter = _exit;
   }
-  
+
   /* execute the command with the lock held */
   execvp(argv[optind], argv + optind);
   fatale("error executing %s", argv[optind]);
-  
 }
 
 /*

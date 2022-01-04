@@ -25,7 +25,7 @@
 
 int dup_e(int oldfd) {
   int ret;
-  
+
   if((ret = dup(oldfd) < 0))
     fatale("error calling dup");
   return ret;

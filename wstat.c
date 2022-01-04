@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils.  Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -31,14 +31,14 @@ const char *wstat(int w) {
 
   if(WIFEXITED(w))
     n = snprintf(buffer, sizeof buffer, "exited with status %d",
-		 WEXITSTATUS(w));
+                 WEXITSTATUS(w));
   else if(WIFSIGNALED(w))
     n = snprintf(buffer, sizeof buffer, "terminated by signal %d [%s]%s",
-		 WTERMSIG(w), strsignal(WTERMSIG(w)),
-		 WCOREDUMP(w) ? " (core dumped)" : "");
+                 WTERMSIG(w), strsignal(WTERMSIG(w)),
+                 WCOREDUMP(w) ? " (core dumped)" : "");
   else if(WIFSTOPPED(w))
     n = snprintf(buffer, sizeof buffer, "stopped by signal %d [%s]",
-		 WTERMSIG(w), strsignal(WTERMSIG(w)));
+                 WTERMSIG(w), strsignal(WTERMSIG(w)));
   else
     n = snprintf(buffer, sizeof buffer, "unknown wait status %#x", (unsigned)w);
   if(n < 0)

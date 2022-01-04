@@ -1,4 +1,4 @@
-/* 
+/*
    This file is part of rjkshellutils, Copyright (C) 2001 Richard Kettlewell
 
    This program is free software: you can redistribute it and/or modify
@@ -28,9 +28,8 @@
 
 #include "utils.h"
 
-void inetaddress(struct sockaddr_in *addr,
-		 const char *addrspec,
-		 const char *proto) {
+void inetaddress(struct sockaddr_in *addr, const char *addrspec,
+                 const char *proto) {
   char **v = split(addrspec, ':');
   const char *a, *p;
 
@@ -52,14 +51,14 @@ void inetaddress(struct sockaddr_in *addr,
 
     if(!(he = gethostbyname(a)))
       fatal("error calling gethostbyname %s", a);
-    memcpy(&addr->sin_addr, he->h_addr, sizeof (struct in_addr));
+    memcpy(&addr->sin_addr, he->h_addr, sizeof(struct in_addr));
   }
   /* convert the port */
   if(strspn(p, "0123456789") == strlen(p))
     addr->sin_port = htons(atoi(p));
   else {
     struct servent *se;
-    
+
     if(!(se = getservbyname(p, proto)))
       fatal("error calling getservbyname %s/%s", p, proto);
     addr->sin_port = se->s_port;

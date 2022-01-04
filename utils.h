@@ -43,28 +43,25 @@ void cloexec(int fd);
 void nonblock(int fd);
 
 /* report an error, printf-style */
-void error(const char *, ...)
-  __attribute__((format (printf, 1, 2)));
+void error(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 /* true if debug output is desired */
 extern int debugging;
 
 /* issue a debug message */
-void debug(const char *fmt, ...)
-  __attribute__((format (printf, 1, 2)));
+void debug(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* report an error, printf-style, including the errno string */
-void errore(const char *, ...)
-  __attribute__((format (printf, 1, 2)));
+void errore(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 /* report an error, printf-style, and terminate */
 void __attribute__((noreturn)) fatal(const char *, ...)
-  __attribute__((format (printf, 1, 2)));
+    __attribute__((format(printf, 1, 2)));
 
 /* report an error, printf-style, including the errno string, and
  * terminate */
 void __attribute__((noreturn)) fatale(const char *, ...)
-  __attribute__((format (printf, 1, 2)));
+    __attribute__((format(printf, 1, 2)));
 
 /* function fatal(), fatale() call to terminate - default is exit().
  * Sometimes it is appropriate to set this to _exit inside a fork (or
@@ -140,8 +137,8 @@ const char *wstat(int w);
 
 /* lookup table for strings */
 struct lookuptable {
-  const char *name;			/* name, or 0 at end of list */
-  int value;				/* value to return */
+  const char *name; /* name, or 0 at end of list */
+  int value;        /* value to return */
 };
 
 /* lookup table of signal names (excluding the "SIG" bit!) */
@@ -153,13 +150,12 @@ extern const struct lookuptable signallookup[];
 int lookup(const struct lookuptable *l, const char *key);
 int lookupi(const struct lookuptable *l, const char *key);
 
-struct sockaddr_in;			/* forward declaration */
+struct sockaddr_in; /* forward declaration */
 
 /* convert an ADDRESS:PORT or PORT specification into a sockaddr_in.
  * PROTO should be "tcp" or "udp" for the service file lookup. */
-void inetaddress(struct sockaddr_in *addr,
-		 const char *addrspec,
-		 const char *proto);
+void inetaddress(struct sockaddr_in *addr, const char *addrspec,
+                 const char *proto);
 
 /* work out the directory name of PATH and return it as an allocated
  * string */
@@ -211,20 +207,15 @@ struct sockaddr;
  * PFP is used to return the protocol family, TYPEP the type and
  * PROTOP the protocol (currently this is always set to 0).
  */
-void parse_socket_arg(int *argp,
-		      int argc, char **argv,
-		      struct sockaddr *addrp,
-		      int *lenp,
-		      int *pfp, int *typep, int *protop);
+void parse_socket_arg(int *argp, int argc, char **argv, struct sockaddr *addrp,
+                      int *lenp, int *pfp, int *typep, int *protop);
 
 /* Convert the socket address at ADDR, length LEN, to a string.  The string
  * is written into a static buffer.
  *
  * If RDNS is nonzero then time-consuming lookups may be made to
  * convert numbers to names. */
-const char *socketprint(const struct sockaddr *addr,
-			size_t len,
-			int rdns);
+const char *socketprint(const struct sockaddr *addr, size_t len, int rdns);
 
 /* Read a line from FP.  Allocate space in the heap for it and save it
  * as a null-terminated string, including the newline (if there is

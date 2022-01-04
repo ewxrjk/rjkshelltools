@@ -33,31 +33,32 @@
 
 #include "utils.h"
 
-static int verbose;			/* verbose mode */
+static int verbose; /* verbose mode */
 
 /* Option flags and variables */
 
-static struct option const long_options[] =
-{
-  { "help", no_argument, 0, 'h' },
-  { "version", no_argument, 0, 'V' },
-  { "signal", required_argument, 0, 's' },
-  { "verbose", no_argument, 0, 'v' },
-  { 0, 0, 0, 0}
-};
+static struct option const long_options[] = {
+    {"help", no_argument, 0, 'h'},
+    {"version", no_argument, 0, 'V'},
+    {"signal", required_argument, 0, 's'},
+    {"verbose", no_argument, 0, 'v'},
+    {0, 0, 0, 0}};
 
 /* write a usage message to FP and exit with the specified status */
 
 static void __attribute__((noreturn)) usage(FILE *fp, int exit_status) {
-  if(fprintf(fp, "Usage:\n"
-	     "\n"
-	     "  alarm [options] -- timeout command ...\n"
-	     "\n"
-	     "Options:\n"
-	     "\n"
-	     "  -s SIGNAL, --signal SIGNAL       Signal to send program on expiry\n"
-	     "  -v, --verbose                    Verbose mode\n"
-	     "\n") < 0)
+  if(fprintf(
+         fp,
+         "Usage:\n"
+         "\n"
+         "  alarm [options] -- timeout command ...\n"
+         "\n"
+         "Options:\n"
+         "\n"
+         "  -s SIGNAL, --signal SIGNAL       Signal to send program on expiry\n"
+         "  -v, --verbose                    Verbose mode\n"
+         "\n")
+     < 0)
     fatale("output error");
   exit(exit_status);
 }
@@ -88,23 +89,14 @@ static int parse_timeout(const char *s) {
     }
     switch(c) {
     case 's':
-    case 'S':
-      scale = 1;
-      break;
+    case 'S': scale = 1; break;
     case 'm':
-    case 'M':
-      scale = 60;
-      break;
+    case 'M': scale = 60; break;
     case 'h':
-    case 'H':
-      scale = 3600;
-      break;
+    case 'H': scale = 3600; break;
     case 'd':
-    case 'D':
-      scale = 86400;
-      break;
-    default:
-      fatal("unknown time unit '%c' in '%s'", c, str);
+    case 'D': scale = 86400; break;
+    default: fatal("unknown time unit '%c' in '%s'", c, str);
     }
     if(!l)
       fatal("invalid time specification '%s'", str);
@@ -140,8 +132,8 @@ static void alarm_handler(int __attribute__((unused)) sig) {
   if(verbose)
     error("timing out child process");
   if(kill(-pid, child_killer_signal) < 0)
-    fatale("error sending signal %d to process group %lu",
-	   child_killer_signal, (unsigned long)pid);
+    fatale("error sending signal %d to process group %lu", child_killer_signal,
+           (unsigned long)pid);
   /* let child_handler tidy up the child */
 }
 
@@ -153,13 +145,12 @@ static void child_handler(int __attribute__((unused)) sig) {
   r = waitpid_e(pid, &w, WNOHANG);
   if(r == pid) {
     if(WIFEXITED(w)) {
-      if((w == 0 && verbose > 1)
-	 || (w != 0 && verbose > 0))
-	fprintf(stderr, "%s: child %s\n", program_name, wstat(w));
+      if((w == 0 && verbose > 1) || (w != 0 && verbose > 0))
+        fprintf(stderr, "%s: child %s\n", program_name, wstat(w));
       exit(w);
     } else {
       if(verbose)
-	fprintf(stderr, "%s: child %s\n", program_name, wstat(w));
+        fprintf(stderr, "%s: child %s\n", program_name, wstat(w));
       exit(WTERMSIG(w) + 128);
     }
   }
@@ -173,30 +164,18 @@ int main(int argc, char **argv) {
   alarm(0);
   setprogname(argv[0]);
 
-  while((n = getopt_long(argc, argv,
-			 "hVs:v",
-			 long_options, (int *)0)) >= 0) {
+  while((n = getopt_long(argc, argv, "hVs:v", long_options, (int *)0)) >= 0) {
     switch(n) {
-    case 'V':
-      printf("alarm %s\n", VERSION);
-      return 0;
+    case 'V': printf("alarm %s\n", VERSION); return 0;
 
-    case 'h':
-      usage(stdout, 0);
-      return 0;
+    case 'h': usage(stdout, 0); return 0;
 
-    case 's':
-      child_killer_signal = parse_signal(optarg);
-      break;
+    case 's': child_killer_signal = parse_signal(optarg); break;
 
-    case 'v':
-      ++verbose;
-      break;
-      
-    default:
-      usage(stderr, 1);
+    case 'v': ++verbose; break;
+
+    default: usage(stderr, 1);
     }
-
   }
 
   /* get the timeout */
@@ -217,7 +196,7 @@ int main(int argc, char **argv) {
    * call restore_signals() inside the fork to put things back
    * right. */
   init_signals();
-  
+
   /* create the child process */
   if(!(pid = fork_e())) {
     exiter = _exit;
@@ -243,7 +222,6 @@ int main(int argc, char **argv) {
 
   /* wait for signals to come in */
   signal_loop();
- 
 }
 
 /*
