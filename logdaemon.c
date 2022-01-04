@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <glob.h>
+#include <assert.h>
 #define SYSLOG_NAMES
 #include <syslog.h>
 #include "utils.h"
@@ -540,6 +541,8 @@ void ld_daily_callback(struct input *i, struct timeval now) {
   ld_close_logfile(l);
   /* convert the strftime pattern to a glob pattern */
   pattern = ld_globtime(l->pattern);
+  if(!pattern)
+    fatal("cannot parse time pattern %s", l->pattern);
   if(l->rotate) {
     /* get a list of all files */
     switch(glob(pattern, GLOB_NOSORT, 0, &g)) {
@@ -742,6 +745,7 @@ char *ld_globtime(const char *pattern) {
       s = xrealloc(s, size = size ? size * 2 : 128);
     s[n++] = c;
   } while(c);
+  assert(s);
   return s;
 }
 
