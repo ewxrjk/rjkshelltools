@@ -61,7 +61,7 @@ mkfifo pipe2term
 cat <<EOF > progs/prog2
 #! /bin/sh
 set -e
-trap "echo > pipe2term ; exit" TERM
+trap "echo > pipe2term ; exit 143" TERM
 echo \$\$ > pipe2
 while :; do
   sleep 1

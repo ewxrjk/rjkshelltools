@@ -59,7 +59,7 @@ PATH=`pwd`:$PATH
 # create a work directory
 tmp=`pwd`/$$
 mkdir $tmp
-trap "cd / && rm -rf $tmp" EXIT INT HUP TERM
+trap "cd / && rm -rf $tmp" EXIT
 cd $tmp
 
 VALGRIND=${VALGRIND:-}
