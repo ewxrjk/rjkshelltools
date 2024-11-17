@@ -19,8 +19,8 @@ dnl
 AC_DEFUN([RJK_C_GCC_ATTRIBUTES],[
   AC_CACHE_CHECK([for GNU C attribute syntax], [rjk_cv_c_gcc_attributes], [
     AC_TRY_COMPILE([
-static int foo() __attribute__((unused));
-static int foo(int __attribute__((unused)) argc,
+static int unused_function() __attribute__((unused));
+static int unused_arguments(int __attribute__((unused)) argc,
                char __attribute__((unused)) *argv[]) {
     return 0;
 }],[return 0;],
