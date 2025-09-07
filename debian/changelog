@@ -1,3 +1,9 @@
+rjk-shell-tools (1.1) stable; urgency=medium
+
+  * Release 1.1
+
+ -- Richard Kettlewell <rjk@terraraq.uk>  Sun, 07 Sep 2025 13:29:13 +0100
+
 rjk-shell-tools (1) stable; urgency=medium
 
   * logdaemon: fix timing and  buffering issues.

@@ -17,7 +17,7 @@ dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl 
 dnl dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([rjk-shell-tools], [1], [rjk@greenend.org.uk])
+AC_INIT([rjk-shell-tools], [1.1], [rjk@greenend.org.uk])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([inplace.c])
 AM_CONFIG_HEADER([config.h])
